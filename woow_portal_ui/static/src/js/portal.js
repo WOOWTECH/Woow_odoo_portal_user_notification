@@ -1234,7 +1234,13 @@ function initTaskEditor() {
         if (lastActive) {
             // Replace the active item content with the parent task as a link
             lastActive.classList.remove("active");
-            lastActive.innerHTML = '<a href="' + parentUrl + '">' + parentName + '</a>';
+            // Task names are user-editable: build the link with DOM APIs, never innerHTML.
+            var parentLink = document.createElement("a");
+            if (/^\/my\/projects\/\d+\/task\/\d+$/.test(parentUrl || "")) {
+                parentLink.href = parentUrl;
+            }
+            parentLink.textContent = parentName || "";
+            lastActive.replaceChildren(parentLink);
             // Add new active item for the sub-task name
             var newItem = document.createElement("li");
             newItem.className = "breadcrumb-item active text-break";
