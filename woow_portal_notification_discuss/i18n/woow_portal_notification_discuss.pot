@@ -1,0 +1,28 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* woow_portal_notification_discuss
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0-20250807\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-03 09:13+0000\n"
+"PO-Revision-Date: 2026-11-03 09:13+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: woow_portal_notification_discuss
+#. odoo-python
+#: code:addons/woow_portal_notification_discuss/controllers/portal.py:0
+msgid "%(count)s unread messages in Discussions"
+msgstr ""
+
+#. module: woow_portal_notification_discuss
+#. odoo-python
+#: code:addons/woow_portal_notification_discuss/controllers/portal.py:0
+msgid "Unread conversations"
+msgstr ""

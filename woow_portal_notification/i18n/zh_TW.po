@@ -1,0 +1,190 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* woow_portal_notification
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0-20250807\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-03 09:14+0000\n"
+"PO-Revision-Date: 2026-11-03 09:14+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "%(days)s days ago"
+msgstr "%(days)s 天前"
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "%(hours)s h ago"
+msgstr "%(hours)s 小時前"
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "%(minutes)s min ago"
+msgstr "%(minutes)s 分鐘前"
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "1 day ago"
+msgstr "1 天前"
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "<i class=\"fa fa-check me-1\" aria-hidden=\"true\"/>Mark all as read"
+msgstr "<i class=\"fa fa-check me-1\" aria-hidden=\"true\"/>全部標為已讀"
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.user_dropdown
+msgid ""
+"<i class=\"fa fa-fw fa-bell-o me-1 small text-primary text-primary-"
+"emphasis\"/><span>Notifications</span>"
+msgstr "<i class=\"fa fa-fw fa-bell-o me-1 small text-primary text-primary-emphasis\"/><span>通知中心</span>"
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.user_dropdown
+msgid "<span class=\"visually-hidden\">Unread notifications</span>"
+msgstr "<span class=\"visually-hidden\">有未讀通知</span>"
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "All"
+msgstr "全部"
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "Close"
+msgstr "關閉"
+
+#. module: woow_portal_notification
+#: model:ir.model,name:woow_portal_notification.model_mail_thread
+msgid "Email Thread"
+msgstr ""
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "Good afternoon, %s"
+msgstr "午安，%s"
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "Good evening, %s"
+msgstr "晚安，%s"
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "Good morning, %s"
+msgstr "早安，%s"
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "Hello, %s"
+msgstr "%s，您好"
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "Just now"
+msgstr "剛剛"
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "Mark as read"
+msgstr "標為已讀"
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "Mark as unread"
+msgstr "標為未讀"
+
+#. module: woow_portal_notification
+#: model:ir.model,name:woow_portal_notification.model_mail_notification
+msgid "Message Notifications"
+msgstr ""
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "No"
+msgstr "否"
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "No matching notifications."
+msgstr "找不到符合的通知。"
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.home_summary
+msgid "No new notifications"
+msgstr "沒有新通知"
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid ""
+"No notifications yet. Updates about your orders, projects and other "
+"documents will appear here."
+msgstr "目前還沒有通知。訂單、專案與其他文件的最新消息會出現在這裡。"
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "No unread notifications."
+msgstr "沒有未讀通知。"
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "Notification"
+msgstr "通知"
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.home_summary
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_breadcrumbs
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "Notifications"
+msgstr "通知中心"
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "Search"
+msgstr "搜尋"
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "Search notifications"
+msgstr "搜尋通知"
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "Unread"
+msgstr "未讀"
+
+#. module: woow_portal_notification
+#: model:ir.model,name:woow_portal_notification.model_res_users
+msgid "User"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.home_summary
+msgid "View all <i class=\"fa fa-angle-right\" aria-hidden=\"true\"/>"
+msgstr "查看全部 <i class=\"fa fa-angle-right\" aria-hidden=\"true\"/>"
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "Yes"
+msgstr "是"

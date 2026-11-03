@@ -1,0 +1,189 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* woow_portal_notification
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0-20250807\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-03 09:14+0000\n"
+"PO-Revision-Date: 2026-11-03 09:14+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "%(days)s days ago"
+msgstr ""
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "%(hours)s h ago"
+msgstr ""
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "%(minutes)s min ago"
+msgstr ""
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "1 day ago"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "<i class=\"fa fa-check me-1\" aria-hidden=\"true\"/>Mark all as read"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.user_dropdown
+msgid ""
+"<i class=\"fa fa-fw fa-bell-o me-1 small text-primary text-primary-"
+"emphasis\"/><span>Notifications</span>"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.user_dropdown
+msgid "<span class=\"visually-hidden\">Unread notifications</span>"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "All"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "Close"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model:ir.model,name:woow_portal_notification.model_mail_thread
+msgid "Email Thread"
+msgstr ""
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "Good afternoon, %s"
+msgstr ""
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "Good evening, %s"
+msgstr ""
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "Good morning, %s"
+msgstr ""
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "Hello, %s"
+msgstr ""
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "Just now"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "Mark as read"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "Mark as unread"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model:ir.model,name:woow_portal_notification.model_mail_notification
+msgid "Message Notifications"
+msgstr ""
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "No"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "No matching notifications."
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.home_summary
+msgid "No new notifications"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid ""
+"No notifications yet. Updates about your orders, projects and other "
+"documents will appear here."
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "No unread notifications."
+msgstr ""
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "Notification"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.home_summary
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_breadcrumbs
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "Notifications"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "Search"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "Search notifications"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "Unread"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model:ir.model,name:woow_portal_notification.model_res_users
+msgid "User"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.home_summary
+msgid "View all <i class=\"fa fa-angle-right\" aria-hidden=\"true\"/>"
+msgstr ""
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "Yes"
+msgstr ""
