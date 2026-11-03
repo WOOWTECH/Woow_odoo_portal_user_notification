@@ -261,11 +261,20 @@ class PortalNotificationCenter(CustomerPortal):
     # /my: greeting, and Odoo's own cards (counted like every other card)
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _wpn_no_store(response):
+        """Unread counts and states change while the customer reads documents:
+        make the back button fetch the page again instead of showing the copy
+        the browser kept (HTTP cache, back/forward cache)."""
+        response.headers['Cache-Control'] = 'no-store'
+        return response
+
     @http.route()
     def home(self, **kw):
         response = super().home(**kw)
         if request.env.user._is_portal() and getattr(response, 'qcontext', None) is not None:
             response.qcontext['wpn_greetings'] = self._wpn_greetings()
+            self._wpn_no_store(response)
         return response
 
     def _prepare_home_portal_values(self, counters):
@@ -365,7 +374,8 @@ class PortalNotificationCenter(CustomerPortal):
             'unread_count': unread_count,
             'extras': self._wpn_extra_entries(),
         })
-        return request.render('woow_portal_notification.portal_my_notifications', values)
+        return self._wpn_no_store(
+            request.render('woow_portal_notification.portal_my_notifications', values))
 
     @http.route('/my/notifications/<int:notification_id>/open', type='http',
                 auth='user', website=True, methods=['GET'])

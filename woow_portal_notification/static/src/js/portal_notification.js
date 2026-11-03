@@ -18,7 +18,16 @@ publicWidget.registry.WoowPortalGreeting = publicWidget.Widget.extend({
         if (text) {
             this.el.textContent = text;
         }
+        // back from a document: the browser shows /my from its back/forward
+        // cache, with the counts of before; reload them
+        this._onPageShow = (ev) => ev.persisted && window.location.reload();
+        window.addEventListener("pageshow", this._onPageShow);
         return this._super(...arguments);
+    },
+
+    destroy() {
+        window.removeEventListener("pageshow", this._onPageShow);
+        this._super(...arguments);
     },
 });
 
@@ -32,6 +41,7 @@ publicWidget.registry.WoowPortalNotifications = publicWidget.Widget.extend({
     events: {
         "click .o_wpn_toggle": "_onToggleClick",
         "click .o_wpn_read_all": "_onReadAllClick",
+        "click a.o_wpn_title:not([data-bs-toggle])": "_onOpenClick",
     },
 
     start() {
@@ -40,6 +50,10 @@ publicWidget.registry.WoowPortalNotifications = publicWidget.Widget.extend({
             this._onShowModal = this._onShowModal.bind(this);
             this.modalEl.addEventListener("show.bs.modal", this._onShowModal);
         }
+        // back from a document: the list comes from the back/forward cache,
+        // as it was before the notification was read; reload it
+        this._onPageShow = (ev) => ev.persisted && window.location.reload();
+        window.addEventListener("pageshow", this._onPageShow);
         const openId = this.el.dataset.open;
         if (openId) {
             this.el.querySelector(`[data-bs-toggle="modal"][data-id="${openId}"]`)?.click();
@@ -49,6 +63,7 @@ publicWidget.registry.WoowPortalNotifications = publicWidget.Widget.extend({
 
     destroy() {
         this.modalEl?.removeEventListener("show.bs.modal", this._onShowModal);
+        window.removeEventListener("pageshow", this._onPageShow);
         this._super(...arguments);
     },
 
@@ -84,6 +99,26 @@ publicWidget.registry.WoowPortalNotifications = publicWidget.Widget.extend({
         }
     },
 
+    /**
+     * The link goes through /my/notifications/<id>/open, which reads the
+     * notification before showing the document: show the row read now,
+     * while the document loads.
+     */
+    _onOpenClick(ev) {
+        this._showRead(ev.currentTarget.closest(".o_wpn_item"));
+    },
+
+    _showRead(item) {
+        if (item?.classList.contains("o_wpn_unread")) {
+            item.classList.remove("o_wpn_unread");
+            for (const el of document.querySelectorAll(".o_wpn_unread_count")) {
+                const count = Math.max((parseInt(el.textContent, 10) || 0) - 1, 0);
+                el.textContent = count;
+                el.classList.toggle("d-none", !count);
+            }
+        }
+    },
+
     async _onReadAllClick(ev) {
         ev.preventDefault();
         const button = ev.currentTarget;
@@ -106,6 +141,7 @@ publicWidget.registry.WoowPortalNotifications = publicWidget.Widget.extend({
         this.modalEl.querySelector(".o_wpn_modal_body").innerHTML = source.innerHTML;
         const item = this.el.querySelector(`.o_wpn_item[data-id="${id}"]`);
         if (item?.classList.contains("o_wpn_unread")) {
+            this._showRead(item);
             this._setRead([parseInt(id, 10)], true);
         }
     },

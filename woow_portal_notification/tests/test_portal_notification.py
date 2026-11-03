@@ -139,6 +139,11 @@ class TestPortalNotification(HttpCase):
         self.assertIn('wpn-read-body', html)
         self.assertNotIn('wpn-first-body', html)
 
+    def test_back_button_gets_fresh_pages(self):
+        self._login_portal()
+        for url in ('/my/home', '/my/notifications'):
+            self.assertEqual(self.url_open(url).headers.get('Cache-Control'), 'no-store', url)
+
     def test_ordered_by_message_date(self):
         old = self._post('<p>wpn-backdated-body</p>')
         old.sudo().date = '2020-01-01 08:00:00'
