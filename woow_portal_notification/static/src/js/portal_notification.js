@@ -70,9 +70,24 @@ publicWidget.registry.WoowPortalNotifications = publicWidget.Widget.extend({
     async _setRead(ids, read) {
         const result = await rpc("/my/notifications/read", { notification_ids: ids, read });
         for (const id of result.updated || []) {
-            this.el.querySelector(`.o_wpn_item[data-id="${id}"]`)?.classList.toggle("o_wpn_unread", !read);
+            const item = this.el.querySelector(`.o_wpn_item[data-id="${id}"]`);
+            if (item) {
+                this._renderRow(item, read);
+            }
         }
         this._showUnreadCount(result.unread_count || 0);
+    },
+
+    /**
+     * A row read or unread: bold title (row class), "Unread" badge and the
+     * button of the pair that applies.  Bootstrap's d-none rather than CSS on
+     * the row class: some websites force the display of .btn (!important).
+     */
+    _renderRow(item, read) {
+        item.classList.toggle("o_wpn_unread", !read);
+        item.querySelector(".o_wpn_unread_badge")?.classList.toggle("d-none", read);
+        item.querySelector(".o_wpn_when_unread")?.classList.toggle("d-none", read);
+        item.querySelector(".o_wpn_when_read")?.classList.toggle("d-none", !read);
     },
 
     _showUnreadCount(count) {
@@ -110,7 +125,7 @@ publicWidget.registry.WoowPortalNotifications = publicWidget.Widget.extend({
 
     _showRead(item) {
         if (item?.classList.contains("o_wpn_unread")) {
-            item.classList.remove("o_wpn_unread");
+            this._renderRow(item, true);
             for (const el of document.querySelectorAll(".o_wpn_unread_count")) {
                 const count = Math.max((parseInt(el.textContent, 10) || 0) - 1, 0);
                 el.textContent = count;

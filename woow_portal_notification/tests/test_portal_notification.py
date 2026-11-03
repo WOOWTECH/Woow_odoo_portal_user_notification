@@ -1,6 +1,7 @@
 import re
 from unittest.mock import patch
 
+import lxml.html
 from markupsafe import Markup
 
 from odoo import Command
@@ -184,12 +185,26 @@ class TestPortalNotification(HttpCase):
     # --- /my/notifications --------------------------------------------------
 
     def test_list_filter_search_and_order(self):
-        self._post('<p>wpn-first-body</p>')
+        unread = self._notif(self._post('<p>wpn-first-body</p>'))
         read_msg = self._post('<p>wpn-read-body</p>')
         self._post('<p>wpn-last-body</p>', author=self.internal_user)
-        self._notif(read_msg).is_read = True
+        read = self._notif(read_msg)
+        read.is_read = True
         self._login_portal()
         html = self.url_open('/my/notifications').text
+        doc = lxml.html.fromstring(html)
+
+        def classes(notif, part):
+            return doc.xpath('//tr[@data-id="%d"]//*[contains(@class, "%s")]/@class'
+                             % (notif.id, part))[0].split()
+        # the read state shows through Bootstrap's d-none (some websites force
+        # the display of .btn, which would show both buttons of the pair)
+        self.assertIn('d-none', classes(read, 'o_wpn_unread_badge'))
+        self.assertIn('d-none', classes(read, 'o_wpn_when_unread'))
+        self.assertNotIn('d-none', classes(read, 'o_wpn_when_read'))
+        self.assertNotIn('d-none', classes(unread, 'o_wpn_unread_badge'))
+        self.assertNotIn('d-none', classes(unread, 'o_wpn_when_unread'))
+        self.assertIn('d-none', classes(unread, 'o_wpn_when_read'))
         self.assertIn('wpn-read-body', html)
         self.assertIn('fa-comment-o', html, "a message written by someone shows a speech bubble")
         self.assertIn('Wpn Staff', html, "and its author")

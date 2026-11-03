@@ -9,14 +9,11 @@
         overflow-wrap: anywhere;
     }
 
+    // the badge and the read / unread buttons show through Bootstrap's d-none
+    // (template and JS), which websites keep working even when they force the
+    // display of .btn
     &.o_wpn_unread .o_wpn_title {
         font-weight: $font-weight-bold;
-    }
-
-    &:not(.o_wpn_unread) .o_wpn_unread_badge,
-    &.o_wpn_unread .o_wpn_when_read,
-    &:not(.o_wpn_unread) .o_wpn_when_unread {
-        display: none;
     }
 }
 

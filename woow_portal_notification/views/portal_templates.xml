@@ -134,7 +134,7 @@
                                 <a t-if="item['url']" t-att-href="item['open_url']" class="o_wpn_title" t-out="item['title']"/>
                                 <a t-else="" href="#" role="button" t-att-data-id="item['id']"
                                    data-bs-toggle="modal" data-bs-target="#o_wpn_modal" class="o_wpn_title" t-out="item['title']"/>
-                                <span class="badge rounded-pill text-bg-primary ms-1 o_wpn_unread_badge">Unread</span>
+                                <span t-attf-class="badge rounded-pill text-bg-primary ms-1 o_wpn_unread_badge #{'d-none' if item['is_read'] else ''}">Unread</span>
                                 <div class="small text-muted">
                                     <i t-attf-class="fa fa-fw #{'fa-comment-o' if item['is_person'] else 'fa-bell-o'}" aria-hidden="true"/>
                                     <t t-out="item['source']"/><t t-if="item['author']"> · <t t-out="item['author']"/></t>
@@ -145,12 +145,14 @@
                                 <span class="d-md-none" t-out="item['day_short']"/>
                                 <span class="d-none d-md-inline"><t t-out="item['day']"/> <t t-out="item['time']"/></span>
                             </td>
+                            <!-- the read state shows through Bootstrap's d-none (also on the
+                                 badge above): sites that force the display of .btn keep it -->
                             <td class="text-end">
-                                <button type="button" class="btn btn-link btn-sm p-0 o_wpn_toggle o_wpn_when_unread"
+                                <button type="button" t-attf-class="btn btn-link btn-sm p-0 o_wpn_toggle o_wpn_when_unread #{'d-none' if item['is_read'] else ''}"
                                         title="Mark as read" aria-label="Mark as read">
                                     <i class="fa fa-envelope" aria-hidden="true"/>
                                 </button>
-                                <button type="button" class="btn btn-link btn-sm p-0 o_wpn_toggle o_wpn_when_read"
+                                <button type="button" t-attf-class="btn btn-link btn-sm p-0 o_wpn_toggle o_wpn_when_read #{'' if item['is_read'] else 'd-none'}"
                                         title="Mark as unread" aria-label="Mark as unread">
                                     <i class="fa fa-envelope-open-o" aria-hidden="true"/>
                                 </button>
