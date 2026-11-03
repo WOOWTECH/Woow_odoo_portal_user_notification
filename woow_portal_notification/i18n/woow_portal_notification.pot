@@ -6,38 +6,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0-20250807\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-03 09:14+0000\n"
-"PO-Revision-Date: 2026-11-03 09:14+0000\n"
+"POT-Creation-Date: 2026-11-03 10:25+0000\n"
+"PO-Revision-Date: 2026-11-03 10:25+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
-
-#. module: woow_portal_notification
-#. odoo-python
-#: code:addons/woow_portal_notification/controllers/portal.py:0
-msgid "%(days)s days ago"
-msgstr ""
-
-#. module: woow_portal_notification
-#. odoo-python
-#: code:addons/woow_portal_notification/controllers/portal.py:0
-msgid "%(hours)s h ago"
-msgstr ""
-
-#. module: woow_portal_notification
-#. odoo-python
-#: code:addons/woow_portal_notification/controllers/portal.py:0
-msgid "%(minutes)s min ago"
-msgstr ""
-
-#. module: woow_portal_notification
-#. odoo-python
-#: code:addons/woow_portal_notification/controllers/portal.py:0
-msgid "1 day ago"
-msgstr ""
 
 #. module: woow_portal_notification
 #: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
@@ -48,22 +24,35 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:woow_portal_notification.user_dropdown
 msgid ""
 "<i class=\"fa fa-fw fa-bell-o me-1 small text-primary text-primary-"
-"emphasis\"/><span>Notifications</span>"
-msgstr ""
-
-#. module: woow_portal_notification
-#: model_terms:ir.ui.view,arch_db:woow_portal_notification.user_dropdown
-msgid "<span class=\"visually-hidden\">Unread notifications</span>"
+"emphasis\"/> Notifications"
 msgstr ""
 
 #. module: woow_portal_notification
 #: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid ""
+"<span class=\"badge rounded-pill text-bg-primary ms-1 "
+"o_wpn_unread_badge\">Unread</span>"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "<span class=\"visually-hidden\">Read</span>"
+msgstr ""
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
 msgid "All"
 msgstr ""
 
 #. module: woow_portal_notification
 #: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
 msgid "Close"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "Date"
 msgstr ""
 
 #. module: woow_portal_notification
@@ -96,12 +85,6 @@ msgid "Hello, %s"
 msgstr ""
 
 #. module: woow_portal_notification
-#. odoo-python
-#: code:addons/woow_portal_notification/controllers/portal.py:0
-msgid "Just now"
-msgstr ""
-
-#. module: woow_portal_notification
 #: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
 msgid "Mark as read"
 msgstr ""
@@ -124,52 +107,53 @@ msgstr ""
 
 #. module: woow_portal_notification
 #: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
-msgid "No matching notifications."
-msgstr ""
-
-#. module: woow_portal_notification
-#: model_terms:ir.ui.view,arch_db:woow_portal_notification.home_summary
-msgid "No new notifications"
-msgstr ""
-
-#. module: woow_portal_notification
-#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
-msgid ""
-"No notifications yet. Updates about your orders, projects and other "
-"documents will appear here."
-msgstr ""
-
-#. module: woow_portal_notification
-#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
-msgid "No unread notifications."
+msgid "No notifications match your search."
 msgstr ""
 
 #. module: woow_portal_notification
 #. odoo-python
 #: code:addons/woow_portal_notification/controllers/portal.py:0
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
 msgid "Notification"
 msgstr ""
 
 #. module: woow_portal_notification
-#: model_terms:ir.ui.view,arch_db:woow_portal_notification.home_summary
 #: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_breadcrumbs
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_home
 #: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
 msgid "Notifications"
 msgstr ""
 
 #. module: woow_portal_notification
-#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
-msgid "Search"
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.user_dropdown
+msgid "Number of unread notifications"
+msgstr ""
+
+#. module: woow_portal_notification
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "Search in notifications"
 msgstr ""
 
 #. module: woow_portal_notification
 #: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
-msgid "Search notifications"
+msgid "There are currently no notifications for your account."
 msgstr ""
 
 #. module: woow_portal_notification
-#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
-msgid "Unread"
+#. odoo-python
+#: code:addons/woow_portal_notification/controllers/portal.py:0
+msgid "Unread (%s)"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_home
+msgid "Unread notifications"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_home
+msgid "Updates about your orders, projects and other documents"
 msgstr ""
 
 #. module: woow_portal_notification
@@ -178,12 +162,12 @@ msgid "User"
 msgstr ""
 
 #. module: woow_portal_notification
-#: model_terms:ir.ui.view,arch_db:woow_portal_notification.home_summary
-msgid "View all <i class=\"fa fa-angle-right\" aria-hidden=\"true\"/>"
-msgstr ""
-
-#. module: woow_portal_notification
 #. odoo-python
 #: code:addons/woow_portal_notification/controllers/portal.py:0
 msgid "Yes"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "You have no unread notifications."
 msgstr ""

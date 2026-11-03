@@ -23,8 +23,9 @@ publicWidget.registry.WoowPortalGreeting = publicWidget.Widget.extend({
 });
 
 /**
- * Notification centre: read / unread switch, "Mark all as read", and the
- * dialog showing the message of a notification whose document has no page.
+ * Notification centre (Odoo's portal search bar and table): read / unread
+ * switch per row, "Mark all as read", and the dialog showing the message of
+ * a notification whose document has no page.
  */
 publicWidget.registry.WoowPortalNotifications = publicWidget.Widget.extend({
     selector: ".o_wpn_page",
@@ -60,14 +61,12 @@ publicWidget.registry.WoowPortalNotifications = publicWidget.Widget.extend({
     },
 
     _showUnreadCount(count) {
+        // the counters in the user menu (next to the name and on the entry)
         for (const el of document.querySelectorAll(".o_wpn_unread_count")) {
             el.textContent = count;
             el.classList.toggle("d-none", !count);
         }
-        for (const el of document.querySelectorAll(".o_wpn_dot")) {
-            el.classList.toggle("d-none", !count);
-        }
-        this.el.querySelector(".o_wpn_read_all")?.classList.toggle("d-none", !count);
+        this.el.querySelector(".o_wpn_read_all_wrap")?.classList.toggle("d-none", !count);
     },
 
     async _onToggleClick(ev) {

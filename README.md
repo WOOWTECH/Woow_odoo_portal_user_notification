@@ -12,21 +12,29 @@ portal pages, cards and layout stay as they are.
 | Module | What it does | Depends on |
 |---|---|---|
 | `woow_portal_notification` | Unread notifications for portal users, greeting and summary on `/my`, the `/my/notifications` page, user-menu entry and unread dot | `portal`, `mail` |
-| `woow_portal_notification_discuss` | "Unread conversations" line for `woow_odoo_portal_discuss`. Installed automatically when both are present | `woow_portal_notification`, `woow_odoo_portal_discuss` |
+| `woow_portal_notification_discuss` | "Unread conversations" card and notice for `woow_odoo_portal_discuss` | `woow_portal_notification`, `woow_odoo_portal_discuss` |
+| `woow_portal_notification_sh_subscription` | Subscription notifications open `/my/sh_subscription/<id>` | `woow_portal_notification`, `sh_subscription` |
+| `woow_portal_notification_crm` | Notifications about assigned leads and opportunities open `/my/lead/<id>` or `/my/opportunity/<id>` | `woow_portal_notification`, `website_crm_partner_assign` |
+| `woow_portal_notification_loyalty` | Gift card and eWallet notifications open `/my/loyalty_card/<id>/history` | `woow_portal_notification`, `loyalty` |
+
+The four bridges install automatically when their two dependencies are present.
 
 ## What a portal customer sees
 
+Everything is built from Odoo's own portal pieces, so it looks like the rest
+of the portal and follows the website theme.
+
 **`/my`**
 - A greeting in Odoo's header row, for example "Good afternoon, Daming Wang". The browser's clock picks the part of the day, so it is right even when the user has no time zone set.
-- A summary card above Odoo's cards: the unread count, the three latest unread notifications and "View all". When nothing is unread it is one line, "No new notifications".
+- Odoo's alert card "N Unread notifications", next to "Quotations to review", and a "Notifications" card among Odoo's cards. Both are counted through `/my/counters` like every other card, and stay hidden when there is nothing to count.
 
 **`/my/notifications`**
-- One list, newest first, with an All / Unread switch, search, and 20 notifications per page. Unread notifications are marked.
+- Odoo's portal search bar (filter All / Unread, search) and portal table, like the orders or invoices list: newest message first, 20 per page, Odoo's pager. Unread notifications are bold with an "Unread" badge.
 - A notification opens its document and becomes read. When the document has no customer page (a contact card, a calendar event), the message opens in a dialog instead.
 - Each notification can be switched between read and unread. "Mark all as read" applies to the current search.
 
 **On every website page**
-- The user menu has a "Notifications" entry with the unread count, and the avatar shows a dot.
+- The user menu has a "Notifications" entry, and the unread count shows next to the name like the cart and wishlist counters.
 
 **Everywhere in the portal**
 - Opening a document reads the notifications about it.
@@ -42,8 +50,8 @@ Inbox, and `/my` stays as Odoo renders it for them.
   2. the published website page (`website_url`);
   3. `False`, and the message is then shown in a dialog.
 
-  It is evaluated as the customer, so only pages they can read are linked. A module whose records have another customer page overrides this method.
-- **Extra lines** above the notifications come from `PortalNotificationCenter._wpn_extra_entries()`. The discussions bridge uses it.
+  It is evaluated as the customer, so only pages they can read are linked. A module whose records have another customer page overrides this method; the subscription, assigned lead and loyalty bridges do.
+- **Notices** above the notification list come from `PortalNotificationCenter._wpn_extra_entries()`; home cards use Odoo's counters (`_prepare_home_portal_values`). The discussions bridge uses both.
 - **Look.** Only Bootstrap SCSS variables and utility classes are used, so the pages follow the website theme. No fonts or brand colours are loaded.
 - **Schema.** Nothing is added to the database schema. Uninstalling leaves Odoo's tables as they were.
 
@@ -55,17 +63,20 @@ System parameters (Settings > Technical > System Parameters). Set a value to
 | Key | Default | Effect |
 |---|---|---|
 | `woow_portal_notification.portal_unread` | `1` | Keep portal users' new notifications unread |
-| `woow_portal_notification.home_summary` | `1` | Show the notification summary on `/my` |
+| `woow_portal_notification.home_summary` | `1` | Show the notification cards on `/my` |
 
 ## Tests
 
 ```
 odoo -d <db> -i woow_portal_notification --test-enable \
-     --test-tags /woow_portal_notification,/woow_portal_notification_discuss --stop-after-init
+     --test-tags /woow_portal_notification,/woow_portal_notification_discuss,/woow_portal_notification_sh_subscription,/woow_portal_notification_crm,/woow_portal_notification_loyalty \
+     --stop-after-init
 ```
 
-The suite runs both on a database with only `portal`, `mail` and this module,
-and on one with `website`, `sale_management` and `woow_odoo_portal_discuss`.
+The suite runs on a database with only `portal`, `mail` and this module; with
+`website` installed first and this module after (the order of a live site);
+with `woow_odoo_portal_discuss`; and with `sh_subscription`,
+`website_crm_partner_assign` and `loyalty`.
 
 ## History
 

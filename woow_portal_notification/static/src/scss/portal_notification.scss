@@ -1,59 +1,32 @@
-// Portal notification centre. Bootstrap SCSS variables only: Odoo compiles
-// them with the website theme, so the look follows the theme (Odoo 18 does
-// not emit Bootstrap's --bs-* CSS variables on the frontend).
+// Portal notification centre. Odoo's own portal components do the layout
+// (home cards, search bar, table, pager, badges, alerts); these rules only
+// cover the unread state and long text. Bootstrap SCSS variables, compiled
+// with the website theme (Odoo 18 does not emit --bs-* CSS variables on the
+// frontend).
 
-// user menu: unread dot after the avatar / name
-.o_wpn_dot {
-    display: inline-block;
-    width: .5rem;
-    height: .5rem;
-    margin-left: .25rem;
-    border-radius: 50%;
-    background-color: $danger;
-    vertical-align: top;
-}
-
-// round marker in front of a notification: initial of the person who wrote,
-// or a bell for a system notification
-.o_wpn_avatar {
-    display: inline-flex;
-    flex: 0 0 2.25rem;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 50%;
-    background-color: $gray-200;
-    color: $gray-700;
-    font-weight: $font-weight-bold;
-
-    &.o_wpn_person {
-        background-color: rgba($primary, .12);
-        color: $primary;
-    }
-}
-
-.o_wpn_main {
-    min-width: 0;
-}
-
-.o_wpn_title {
-    overflow-wrap: anywhere;
-}
-
-// home summary
-.o_wpn_summary_row {
-    border-top: $border-width solid $border-color;
-}
-
-// centre: unread notifications stand out with a bar, a tint and a bolder title
-.o_wpn_item.o_wpn_unread {
-    background-color: rgba($primary, .05);
-    box-shadow: inset 3px 0 0 $primary;
-
+.o_wpn_item {
     .o_wpn_title {
+        overflow-wrap: anywhere;
+    }
+
+    &.o_wpn_unread .o_wpn_title {
         font-weight: $font-weight-bold;
     }
+
+    &:not(.o_wpn_unread) .o_wpn_unread_badge,
+    &.o_wpn_unread .o_wpn_when_read,
+    &:not(.o_wpn_unread) .o_wpn_when_unread {
+        display: none;
+    }
+}
+
+// Odoo's portal table keeps every cell on one truncated line (max 10rem);
+// the notification cell holds a title, its source and a preview, so let it
+// wrap and take the room left by the date
+.o_portal_wrap .o_portal_my_doc_table td.o_wpn_main {
+    min-width: 12rem;
+    max-width: none;
+    white-space: normal;
 }
 
 .o_wpn_preview {
@@ -61,25 +34,16 @@
     overflow: hidden;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
-    color: $gray-600;
     overflow-wrap: anywhere;
 }
 
-// read / unread switch: above the stretched link of the item
 .o_wpn_toggle {
-    position: relative;
-    z-index: 2;
     color: $gray-600;
 
     &:hover,
     &:focus-visible {
         color: $primary;
     }
-}
-
-.o_wpn_item.o_wpn_unread .o_wpn_when_read,
-.o_wpn_item:not(.o_wpn_unread) .o_wpn_when_unread {
-    display: none;
 }
 
 .o_wpn_body img {

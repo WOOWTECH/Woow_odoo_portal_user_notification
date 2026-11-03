@@ -3,31 +3,35 @@
     "version": "18.0.1.0.0",
     "category": "Website",
     "summary": "An inbox for portal customers: unread notifications, "
-               "a greeting and summary on /my, and a notification centre page",
+               "Odoo's own cards on /my, and a notification list page",
     "description": """
 Portal Notification Centre
 ==========================
 
 Odoo e-mails portal customers about their documents but gives them no place in
-the portal to see those notifications.  This module adds one, and nothing else:
+the portal to see those notifications.  This module adds one, built only from
+Odoo's own portal pieces (home cards and counters, search bar, table, pager),
+so it looks like the rest of the portal and follows the website theme:
 
 * portal users' e-mail notifications are kept unread (Odoo creates them read);
   opening the document, the notification or "Mark all as read" reads them;
-* /my greets the customer and shows the unread count with the latest unread
-  notifications above Odoo's own cards;
-* /my/notifications lists every notification (all / unread, search, pages);
-  a notification opens its document, or shows the message when the document
-  has no page of its own;
-* the user menu gets a "Notifications" entry with the count, and the avatar a
-  dot, on every website page.
+* /my greets the customer in Odoo's header row and shows Odoo's alert card
+  "N Unread notifications" and a "Notifications" card, counted like the
+  other cards;
+* /my/notifications lists the notifications like the orders list (filter
+  all / unread, search, pages); a notification opens its document, or shows
+  the message when the document has no page of its own;
+* the user menu gets a "Notifications" entry, and the unread count shows next
+  to the name, on every website page.
 
 Only portal customers are served; internal users are sent to their backend
-Inbox.  The look follows the website theme (Bootstrap variables only).
+Inbox.  Bridges (installed automatically) link subscriptions, assigned leads
+and loyalty cards to their pages, and count unread conversations.
 
 Settings (system parameters, "0" turns the feature off):
 
 * ``woow_portal_notification.portal_unread``: keep portal notifications unread;
-* ``woow_portal_notification.home_summary``: notification summary on /my.
+* ``woow_portal_notification.home_summary``: notification cards on /my.
     """,
     "author": "Woow Tech",
     "website": "https://www.woow.tw",

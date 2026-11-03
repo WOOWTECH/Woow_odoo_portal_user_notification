@@ -6,14 +6,17 @@
     "description": """
 Conversations (direct messages, groups, channels) create no mail notifications,
 so the notification centre cannot list them.  With woow_odoo_portal_discuss
-installed, this bridge adds an "Unread conversations" line, linking to
-/my/discussions, on /my and on /my/notifications.  Installed automatically.
+installed, this bridge adds Odoo's alert card "N unread conversations" on /my
+and a notice on /my/notifications, both linking to /my/discussions.  Installed
+automatically.
     """,
     "author": "Woow Tech",
     "website": "https://www.woow.tw",
     "license": "LGPL-3",
     "depends": ["woow_portal_notification", "woow_odoo_portal_discuss"],
-    "data": [],
+    "data": [
+        "views/portal_templates.xml",
+    ],
     "installable": True,
     "auto_install": True,
 }

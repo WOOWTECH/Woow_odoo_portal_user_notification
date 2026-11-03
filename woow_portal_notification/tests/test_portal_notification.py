@@ -69,43 +69,54 @@ class TestPortalNotification(HttpCase):
 
     # --- /my --------------------------------------------------------------
 
-    def test_home_greeting_and_summary(self):
+    def _counters(self):
+        return self.make_jsonrpc_request('/my/counters', {
+            'counters': ['wpn_unread_count', 'wpn_notification_count']})
+
+    def test_home_greeting_and_cards(self):
         for i in range(4):
-            self._post('<p>wpn-summary-%d</p>' % i, subject='wpn-subject-%d' % i)
+            self._post('<p>wpn-home-%d</p>' % i)
+        self._notif(self._post('<p>wpn-home-read</p>')).is_read = True
         self._login_portal()
         html = self.url_open('/my/home').text
         self.assertIn('o_wpn_greeting', html)
         self.assertIn('Wpn Customer', html)
-        self.assertIn('o_wpn_summary', html)
-        self.assertIn('wpn-subject-3', html, "newest unread first")
-        self.assertNotIn('wpn-subject-0', html, "three items at most")
-        self.assertIn('o_portal_docs', html, "Odoo's own cards stay")
+        # Odoo's own cards, counted through /my/counters
+        self.assertIn('data-placeholder_count="wpn_unread_count"', html)
+        self.assertIn('data-placeholder_count="wpn_notification_count"', html)
+        counters = self._counters()
+        self.assertEqual(counters['wpn_unread_count'], 4)
+        self.assertEqual(counters['wpn_notification_count'], 5)
 
-    def test_home_summary_empty_and_switch(self):
-        self._login_portal()
-        html = self.url_open('/my/home').text
-        self.assertIn('No new notifications', html)
+    def test_home_cards_switch(self):
+        self._post('<p>wpn-switch</p>')
         self.env['ir.config_parameter'].sudo().set_param(
             'woow_portal_notification.home_summary', '0')
-        html = self.url_open('/my/home').text
-        self.assertNotIn('o_wpn_summary', html)
-        self.assertIn('o_wpn_greeting', html, "the greeting stays")
+        self._login_portal()
+        counters = self._counters()
+        self.assertEqual(counters['wpn_unread_count'], 0, "a card counting 0 stays hidden")
+        self.assertEqual(counters['wpn_notification_count'], 0)
+        self.assertIn('o_wpn_greeting', self.url_open('/my/home').text, "the greeting stays")
 
-    def test_user_menu_entry_and_dot(self):
-        self._post('<p>dot</p>')
+    def test_user_menu_entry_and_count(self):
+        self._post('<p>count</p>')
+        self._post('<p>count again</p>')
         self._login_portal()
         html = self.url_open('/my/home').text
         self.assertIn('href="/my/notifications"', html)
-        self.assertIn('o_wpn_dot', html)
+        self.assertRegex(html, r'o_wpn_unread_count"[^>]*>2<')
+        if 'website' in self.env:
+            self.assertRegex(self.url_open('/').text, r'o_wpn_unread_count"[^>]*>2<',
+                             "the count is on website pages too")
 
     def test_internal_user_is_sent_to_the_backend_inbox(self):
+        self._post('<p>for staff</p>')
         self.authenticate('wpn_staff', 'wpn_staff_pw!')
         response = self.url_open('/my/notifications', allow_redirects=False)
         self.assertEqual(response.status_code, 303)
         self.assertTrue(response.headers['Location'].endswith('/odoo/discuss'))
-        html = self.url_open('/my/home').text
-        self.assertNotIn('o_wpn_summary', html)
-        self.assertNotIn('o_wpn_greeting', html)
+        self.assertNotIn('o_wpn_greeting', self.url_open('/my/home').text)
+        self.assertEqual(self._counters()['wpn_unread_count'], 0)
 
     # --- /my/notifications --------------------------------------------------
 
@@ -117,7 +128,8 @@ class TestPortalNotification(HttpCase):
         self._login_portal()
         html = self.url_open('/my/notifications').text
         self.assertIn('wpn-read-body', html)
-        self.assertIn('o_wpn_person', html, "a message written by someone shows their initial")
+        self.assertIn('fa-comment-o', html, "a message written by someone shows a speech bubble")
+        self.assertIn('Wpn Staff', html, "and its author")
         self.assertLess(html.index('wpn-last-body'), html.index('wpn-first-body'),
                         "newest first")
         html = self.url_open('/my/notifications?filterby=unread').text

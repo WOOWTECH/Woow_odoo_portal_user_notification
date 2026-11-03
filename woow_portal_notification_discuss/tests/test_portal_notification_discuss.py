@@ -20,7 +20,7 @@ class TestPortalNotificationDiscuss(HttpCase):
             'groups_id': [Command.set([self.env.ref('base.group_user').id])],
         })
         self.authenticate('wpn_chat', 'wpn_chat_pw!')
-        self.assertNotIn('Unread conversations', self.url_open('/my/home').text)
+        self.assertNotIn('unread messages in Discussions', self.url_open('/my/notifications').text)
 
         channel = self.env['discuss.channel'].create({
             'name': 'Wpn chat', 'channel_type': 'group',
@@ -29,7 +29,9 @@ class TestPortalNotificationDiscuss(HttpCase):
         })
         channel.with_user(staff).message_post(
             body=Markup('<p>hi</p>'), message_type='comment', subtype_xmlid='mail.mt_comment')
-        html = self.url_open('/my/home').text
-        self.assertIn('Unread conversations', html)
-        self.assertIn('/my/discussions', html)
-        self.assertIn('Unread conversations', self.url_open('/my/notifications').text)
+        counters = self.make_jsonrpc_request('/my/counters', {'counters': ['wpn_unread_conversation_count']})
+        self.assertEqual(counters['wpn_unread_conversation_count'], 1)
+        self.assertIn('data-placeholder_count="wpn_unread_conversation_count"', self.url_open('/my/home').text)
+        html = self.url_open('/my/notifications').text
+        self.assertIn('1 unread messages in Discussions', html)
+        self.assertIn('href="/my/discussions"', html)

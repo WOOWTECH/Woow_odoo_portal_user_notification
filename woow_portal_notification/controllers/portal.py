@@ -2,23 +2,23 @@ import logging
 from datetime import datetime
 
 import pytz
+from babel.dates import format_skeleton
 
 from odoo import _, http
 from odoo.fields import Datetime as FieldDatetime
 from odoo.http import request
 from odoo.tools import SQL, format_amount
 from odoo.tools.mail import html_to_inner_content
-from odoo.tools.misc import format_date, format_datetime
+from odoo.tools.misc import babel_locale_parse, format_date, format_datetime
 from odoo.addons.portal.controllers.portal import CustomerPortal
 from odoo.addons.portal.controllers.portal import pager as portal_pager
 
 _logger = logging.getLogger(__name__)
 
 PAGE_SIZE = 20
-SUMMARY_SIZE = 3
 PREVIEW_CHARS = 140
 SEARCH_CHARS = 100
-# System parameter: "0" hides the notification summary on /my.
+# System parameter: "0" hides the notification cards on /my.
 PARAM_HOME_SUMMARY = 'woow_portal_notification.home_summary'
 # Internal users read their notifications in the backend Inbox.
 BACKEND_INBOX = '/odoo/discuss'
@@ -33,16 +33,18 @@ def _param_enabled(key):
 
 
 class PortalNotificationCenter(CustomerPortal):
-    """Notification centre for portal customers."""
+    """Notification centre for portal customers, built from Odoo's own
+    portal pieces: home cards and counters, the portal search bar, the
+    portal table and pager."""
 
     # ------------------------------------------------------------------
     # Extension points
     # ------------------------------------------------------------------
 
     def _wpn_extra_entries(self):
-        """Lines shown above the notifications, on /my and on the centre,
-        for things that are not mail notifications (e.g. unread
-        conversations).  Each entry: {icon, title, text, url}."""
+        """Notices shown above the notification list for things that are not
+        mail notifications (e.g. unread conversations).
+        Each entry: {icon, text, url, link_label}."""
         return []
 
     # ------------------------------------------------------------------
@@ -101,29 +103,14 @@ class PortalNotificationCenter(CustomerPortal):
         except pytz.UnknownTimeZoneError:
             return pytz.UTC
 
+    def _wpn_local(self, dt):
+        return pytz.UTC.localize(dt).astimezone(self._wpn_user_tz())
+
     def _wpn_local_datetime(self, dt):
         if not dt:
             return ''
         return format_datetime(request.env, dt, tz=self._wpn_user_tz().zone,
                                dt_format='short')
-
-    def _wpn_relative_time(self, dt, now):
-        if not dt:
-            return ''
-        seconds = max(int((now - dt).total_seconds()), 0)
-        if seconds < 60:
-            return _('Just now')
-        if seconds < 3600:
-            return _('%(minutes)s min ago', minutes=seconds // 60)
-        if seconds < 86400:
-            return _('%(hours)s h ago', hours=seconds // 3600)
-        days = seconds // 86400
-        if days == 1:
-            return _('1 day ago')
-        if days < 7:
-            return _('%(days)s days ago', days=days)
-        local = pytz.UTC.localize(dt).astimezone(self._wpn_user_tz())
-        return format_date(request.env, local.date())
 
     def _wpn_format_tracking_value(self, value, field_type, currency_id=None):
         """One side of a tracked change, readable whatever the field type."""
@@ -211,7 +198,7 @@ class PortalNotificationCenter(CustomerPortal):
             cache[model] = (request.env['ir.model']._get(model).name or '') if model else ''
         return cache[model]
 
-    def _wpn_item(self, notification, now, cache, with_body=None):
+    def _wpn_item(self, notification, cache, with_body=None):
         """Display values of one notification.  ``with_body``: True, False,
         or None for "only when the document has no page of its own" (the
         message is then shown in a dialog)."""
@@ -235,16 +222,23 @@ class PortalNotificationCenter(CustomerPortal):
         url = self._wpn_document_url(message)
         if with_body is None:
             with_body = not url
+        local = self._wpn_local(message.date) if message.date else None
+        if local and 'locale' not in cache:
+            cache['locale'] = babel_locale_parse(request.env.lang or 'en_US')
+            cache['year'] = self._wpn_local(FieldDatetime.now()).year
         return {
             'id': notification.id,
             'is_read': notification.is_read,
             'is_person': is_person,
-            'initial': (author.name or '?')[:1].upper() if is_person else '',
             'author': (author.name or '') if is_person else '',
             'title': title,
             'source': ' · '.join(part for part in source if part),
             'preview': preview,
-            'time_ago': self._wpn_relative_time(message.date, now),
+            'day': format_date(request.env, local.date()) if local else '',
+            # short form for phones: "11月3日" / "Nov 3", with the year when not this year
+            'day_short': format_skeleton('MMMd' if local.year == cache['year'] else 'yMMMd',
+                                         local, locale=cache['locale']) if local else '',
+            'time': local.strftime('%H:%M') if local else '',
             'date': self._wpn_local_datetime(message.date),
             'url': url,
             'open_url': '/my/notifications/%d/open' % notification.id,
@@ -263,20 +257,8 @@ class PortalNotificationCenter(CustomerPortal):
             'evening': _('Good evening, %s', name),
         }
 
-    def _wpn_home_summary(self):
-        user = request.env.user
-        notifications = self._wpn_search(
-            self._wpn_domain(user.partner_id, 'unread'), limit=SUMMARY_SIZE)
-        now = FieldDatetime.now()
-        cache = {}
-        return {
-            'unread_count': user._wpn_unread_count(),
-            'items': [self._wpn_item(n, now, cache, with_body=False) for n in notifications],
-            'extras': self._wpn_extra_entries(),
-        }
-
     # ------------------------------------------------------------------
-    # /my: greeting and summary above Odoo's cards
+    # /my: greeting, and Odoo's own cards (counted like every other card)
     # ------------------------------------------------------------------
 
     @http.route()
@@ -284,9 +266,20 @@ class PortalNotificationCenter(CustomerPortal):
         response = super().home(**kw)
         if request.env.user._is_portal() and getattr(response, 'qcontext', None) is not None:
             response.qcontext['wpn_greetings'] = self._wpn_greetings()
-            if _param_enabled(PARAM_HOME_SUMMARY):
-                response.qcontext['wpn_summary'] = self._wpn_home_summary()
         return response
+
+    def _prepare_home_portal_values(self, counters):
+        values = super()._prepare_home_portal_values(counters)
+        wanted = {'wpn_unread_count', 'wpn_notification_count'} & set(counters or ())
+        if wanted:
+            user = request.env.user
+            shown = user._is_portal() and _param_enabled(PARAM_HOME_SUMMARY)
+            if 'wpn_unread_count' in wanted:
+                values['wpn_unread_count'] = user._wpn_unread_count() if shown else 0
+            if 'wpn_notification_count' in wanted:
+                values['wpn_notification_count'] = request.env['mail.notification'].sudo().search_count(
+                    self._wpn_domain(user.partner_id)) if shown else 0
+        return values
 
     # ------------------------------------------------------------------
     # Opening a document reads its notifications
@@ -331,12 +324,11 @@ class PortalNotificationCenter(CustomerPortal):
                              total=Notification.search_count(domain),
                              page=page, step=PAGE_SIZE)
         notifications = self._wpn_search(domain, limit=PAGE_SIZE, offset=pager['offset'])
-        now = FieldDatetime.now()
         cache = {}
-        items = [self._wpn_item(n, now, cache) for n in notifications]
+        items = [self._wpn_item(n, cache) for n in notifications]
 
-        # ?open=<id>: show that notification's message on arrival (a summary
-        # item, or a notification whose document has no page)
+        # ?open=<id>: show that notification's message on arrival (one whose
+        # document has no customer page)
         modal_items = [item for item in items if not item['url']]
         open_id = False
         try:
@@ -348,18 +340,29 @@ class PortalNotificationCenter(CustomerPortal):
             if target and target.res_partner_id == partner:
                 open_id = target.id
                 if open_id not in {item['id'] for item in modal_items}:
-                    modal_items.append(self._wpn_item(target, now, cache, with_body=True))
+                    modal_items.append(self._wpn_item(target, cache, with_body=True))
 
+        unread_count = user._wpn_unread_count()
         values = self._prepare_portal_layout_values()
         values.update({
             'page_name': 'wpn_notifications',
+            'default_url': '/my/notifications',
+            # Odoo's portal search bar
+            'searchbar_filters': {
+                'all': {'label': _('All')},
+                'unread': {'label': _('Unread (%s)', unread_count)},
+            },
+            'filterby': filterby,
+            'searchbar_inputs': {
+                'all': {'input': 'all', 'label': _('Search in notifications')},
+            },
+            'search_in': 'all',
+            'search': search,
+            'pager': pager,
             'items': items,
             'modal_items': modal_items,
             'open_id': open_id,
-            'pager': pager,
-            'filterby': filterby,
-            'search': search,
-            'unread_count': user._wpn_unread_count(),
+            'unread_count': unread_count,
             'extras': self._wpn_extra_entries(),
         })
         return request.render('woow_portal_notification.portal_my_notifications', values)
