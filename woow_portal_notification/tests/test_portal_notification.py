@@ -1,7 +1,11 @@
+import re
+from unittest.mock import patch
+
 from markupsafe import Markup
 
 from odoo import Command
 from odoo.tests import HttpCase, tagged
+from odoo.tests.common import JsonRpcException
 
 
 @tagged('post_install', '-at_install', 'woow_portal_notification')
@@ -109,6 +113,65 @@ class TestPortalNotification(HttpCase):
             self.assertRegex(self.url_open('/').text, r'o_wpn_unread_count"[^>]*>2<',
                              "the count is on website pages too")
 
+    def test_user_menu_count_is_per_visitor(self):
+        """Without website, Odoo caches the portal navbar per company
+        (t-cache="res_company").  The user menu inside it is rendered for each
+        visitor (t-nocache), and so must be the count and entry added to it."""
+        for i in range(3):
+            self._post('<p>wpn-visitor-%d</p>' % i)
+        self.env['mail.notification'].search([
+            ('res_partner_id', '=', self.other_portal.partner_id.id)])[:2].is_read = True
+        self.assertEqual(self.portal_user._wpn_unread_count(), 3)
+        self.assertEqual(self.other_portal._wpn_unread_count(), 1)
+        visitors = {  # login, password, counts shown, menu entry shown
+            'portal': ('wpn_portal', 'wpn_portal_pw!', {'3'}, True),
+            'other': ('wpn_other', 'wpn_other_pw!', {'1'}, True),
+            'staff': ('wpn_staff', 'wpn_staff_pw!', set(), False),
+            'public': (None, None, set(), False),
+        }
+        names = {'portal': 'Wpn Customer', 'other': 'Wpn Other', 'staff': 'Wpn Staff'}
+        website = 'website' in self.env
+        Qweb = type(self.env['ir.qweb'])
+        load_values = Qweb._load_values
+        navbar = []
+
+        def spy(qweb, cache_key, get_value, loaded_values=None):
+            # whether the per-company navbar block came from the cache
+            computed = []
+
+            def compute():
+                computed.append(True)
+                return get_value()
+            value = load_values(qweb, cache_key, compute, loaded_values)
+            if "'res.company'" in str(cache_key):
+                navbar.append(bool(computed))
+            return value
+
+        orders = [('portal', 'other', 'staff', 'public'), ('other', 'staff', 'public', 'portal'),
+                  ('public', 'staff', 'other', 'portal'), ('staff', 'portal', 'public', 'other')]
+        with patch.object(Qweb, '_load_values', spy):
+            for order in orders:
+                self.env.registry.clear_cache('templates')
+                navbar.clear()
+                for who in order:
+                    login, password, counts, entry = visitors[who]
+                    self.authenticate(login, password)
+                    # the login page has no header; with website, the home page has one
+                    url = '/my/home' if login else ('/' if website else '/web/login')
+                    response = self.url_open(url)
+                    self.assertEqual(response.status_code, 200, (order, who))
+                    html = response.text
+                    found = re.findall(r'o_wpn_unread_count"[^>]*>(\d+)<', html)
+                    self.assertEqual(set(found), counts, (order, who))
+                    self.assertEqual('href="/my/notifications" role="menuitem"' in html, entry,
+                                     (order, who))
+                    for other, name in names.items():
+                        if other != who:
+                            self.assertNotIn(name, html, (order, who))
+                if not website:
+                    self.assertEqual(navbar, [True, False, False],
+                                     "after the first visitor the navbar comes from the cache")
+
     def test_internal_user_is_sent_to_the_backend_inbox(self):
         self._post('<p>for staff</p>')
         self.authenticate('wpn_staff', 'wpn_staff_pw!')
@@ -170,6 +233,20 @@ class TestPortalNotification(HttpCase):
         html = self.url_open('/my/notifications?open=%d' % notif.id).text
         self.assertIn('data-open="%d"' % notif.id, html)
         self.assertIn('wpn-modal-body', html)
+        self.assertRegex(html, r'<template [^>]*class="o_wpn_body_src"',
+                         "kept inert until the dialog is opened")
+
+    def test_page_lookup_bug_is_logged_and_shown_in_the_dialog(self):
+        self._post('<p>wpn-broken-lookup</p>')
+        self._login_portal()
+        Partner = type(self.env['res.partner'])
+        with patch.object(Partner, '_wpn_portal_url', side_effect=ValueError('bridge bug')), \
+                self.assertLogs('odoo.addons.woow_portal_notification.controllers.portal',
+                                'WARNING') as logs:
+            html = self.url_open('/my/notifications').text
+        self.assertIn('wpn-broken-lookup', html, "the list still shows")
+        self.assertIn('o_wpn_body_src', html, "with the message in the dialog")
+        self.assertTrue(any('no portal URL' in line for line in logs.output), logs.output)
 
     def test_open_with_portal_page_goes_to_the_document(self):
         if 'sale.order' not in self.env:
@@ -202,6 +279,14 @@ class TestPortalNotification(HttpCase):
         response = self.url_open('/my/notifications/%d/open' % theirs.id, allow_redirects=False)
         self.assertTrue(response.headers['Location'].endswith('/my/notifications'))
         self.assertFalse(theirs.is_read)
+
+    def test_read_flag_must_be_a_boolean(self):
+        mine = self._notif(self._post('<p>mine</p>'))
+        self._login_portal()
+        with self.assertRaises(JsonRpcException):
+            self.make_jsonrpc_request('/my/notifications/read', {
+                'notification_ids': [mine.id], 'read': 'false'})
+        self.assertFalse(mine.is_read, "the string 'false' is refused, not taken as true")
 
     def test_mark_all_read_follows_search(self):
         hit = self._notif(self._post('<p>wpn-alpha</p>'))

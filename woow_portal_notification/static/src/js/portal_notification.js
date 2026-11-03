@@ -137,8 +137,9 @@ publicWidget.registry.WoowPortalNotifications = publicWidget.Widget.extend({
             return;
         }
         this.modalEl.querySelector(".modal-title").textContent = source.dataset.title || "";
-        // server-rendered, sanitised message HTML (see portal_my_notifications)
-        this.modalEl.querySelector(".o_wpn_modal_body").innerHTML = source.innerHTML;
+        // server-rendered, sanitised message HTML kept in a <template>
+        // (see portal_my_notifications): copy its nodes, never re-parse markup
+        this.modalEl.querySelector(".o_wpn_modal_body").replaceChildren(source.content.cloneNode(true));
         const item = this.el.querySelector(`.o_wpn_item[data-id="${id}"]`);
         if (item?.classList.contains("o_wpn_unread")) {
             this._showRead(item);

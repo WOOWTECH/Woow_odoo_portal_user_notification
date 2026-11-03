@@ -3,8 +3,10 @@ from datetime import datetime
 
 import pytz
 from babel.dates import format_skeleton
+from werkzeug.exceptions import BadRequest
 
 from odoo import _, http
+from odoo.exceptions import AccessError, MissingError
 from odoo.fields import Datetime as FieldDatetime
 from odoo.http import request
 from odoo.tools import SQL, format_amount
@@ -189,9 +191,15 @@ class PortalNotificationCenter(CustomerPortal):
         try:
             record = record.exists()
             return record._wpn_portal_url() if record else False
-        except Exception:  # noqa: BLE001 - never break the list for one record
+        except (AccessError, MissingError):
+            # gone meanwhile, or its page needs more than reading the record
             _logger.debug('no portal URL for %s,%s', message.model, message.res_id,
                           exc_info=True)
+            return False
+        except Exception:  # noqa: BLE001 - never break the list for one record
+            # a bug, e.g. in a _wpn_portal_url bridge: say so, show the dialog
+            _logger.warning('no portal URL for %s,%s, the message is shown in the dialog',
+                            message.model, message.res_id, exc_info=True)
             return False
 
     @staticmethod
@@ -396,6 +404,8 @@ class PortalNotificationCenter(CustomerPortal):
     def wpn_read(self, notification_ids=None, read=True, **kw):
         """Mark the given notifications of the signed-in customer read or
         unread.  Returns the ids changed and the new unread count."""
+        if not isinstance(read, bool):
+            raise BadRequest("'read' must be true or false")
         user = request.env.user
         if not user._is_portal():
             return {'updated': [], 'unread_count': 0}
@@ -409,7 +419,7 @@ class PortalNotificationCenter(CustomerPortal):
                 continue
         notifications = request.env['mail.notification'].sudo().search([
             ('id', 'in', ids), ('res_partner_id', '=', user.partner_id.id)])
-        self._wpn_mark_read(notifications, bool(read))
+        self._wpn_mark_read(notifications, read)
         return {'updated': notifications.ids, 'unread_count': user._wpn_unread_count()}
 
     @http.route('/my/notifications/read_all', type='json', auth='user', methods=['POST'])

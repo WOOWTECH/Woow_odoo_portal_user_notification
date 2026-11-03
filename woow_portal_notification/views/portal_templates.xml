@@ -171,8 +171,10 @@
                         </div>
                     </div>
                 </div>
-                <div t-foreach="modal_items" t-as="item" class="d-none o_wpn_body_src"
-                     t-att-data-id="item['id']" t-att-data-title="item['title']">
+                <!-- in <template> elements: nothing in a message (a remote image)
+                     loads before its dialog is opened -->
+                <template t-foreach="modal_items" t-as="item" class="o_wpn_body_src"
+                          t-att-data-id="item['id']" t-att-data-title="item['title']">
                     <p class="small text-muted">
                         <t t-out="item['source']"/><t t-if="item['source']"> · </t><t t-out="item['date']"/><t t-if="item['author']"> · <t t-out="item['author']"/></t>
                     </p>
@@ -185,7 +187,7 @@
                             </tr>
                         </tbody>
                     </table>
-                </div>
+                </template>
                 <button t-if="open_id" type="button" class="d-none" t-att-data-id="open_id"
                         data-bs-toggle="modal" data-bs-target="#o_wpn_modal"/>
             </div>
