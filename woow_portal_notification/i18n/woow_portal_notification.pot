@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0-20250807\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-03 10:25+0000\n"
-"PO-Revision-Date: 2026-11-03 10:25+0000\n"
+"POT-Creation-Date: 2026-11-03 12:13+0000\n"
+"PO-Revision-Date: 2026-11-03 12:13+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -40,8 +40,7 @@ msgid "<span class=\"visually-hidden\">Read</span>"
 msgstr ""
 
 #. module: woow_portal_notification
-#. odoo-python
-#: code:addons/woow_portal_notification/controllers/portal.py:0
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
 msgid "All"
 msgstr ""
 
@@ -130,6 +129,11 @@ msgid "Number of unread notifications"
 msgstr ""
 
 #. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "Read"
+msgstr ""
+
+#. module: woow_portal_notification
 #. odoo-python
 #: code:addons/woow_portal_notification/controllers/portal.py:0
 msgid "Search in notifications"
@@ -141,9 +145,8 @@ msgid "There are currently no notifications for your account."
 msgstr ""
 
 #. module: woow_portal_notification
-#. odoo-python
-#: code:addons/woow_portal_notification/controllers/portal.py:0
-msgid "Unread (%s)"
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "Unread"
 msgstr ""
 
 #. module: woow_portal_notification
@@ -165,6 +168,11 @@ msgstr ""
 #. odoo-python
 #: code:addons/woow_portal_notification/controllers/portal.py:0
 msgid "Yes"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
+msgid "You have no read notifications."
 msgstr ""
 
 #. module: woow_portal_notification

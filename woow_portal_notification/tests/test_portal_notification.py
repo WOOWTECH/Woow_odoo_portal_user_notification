@@ -132,9 +132,13 @@ class TestPortalNotification(HttpCase):
         self.assertIn('Wpn Staff', html, "and its author")
         self.assertLess(html.index('wpn-last-body'), html.index('wpn-first-body'),
                         "newest first")
+        self.assertIn('o_wpn_filters', html, "All / Unread / Read switch")
         html = self.url_open('/my/notifications?filterby=unread').text
         self.assertIn('wpn-first-body', html)
         self.assertNotIn('wpn-read-body', html)
+        html = self.url_open('/my/notifications?filterby=read').text
+        self.assertIn('wpn-read-body', html, "read notifications stay reachable")
+        self.assertNotIn('wpn-first-body', html)
         html = self.url_open('/my/notifications?search=wpn-read').text
         self.assertIn('wpn-read-body', html)
         self.assertNotIn('wpn-first-body', html)

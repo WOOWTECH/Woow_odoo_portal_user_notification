@@ -78,12 +78,33 @@
             <div class="o_wpn_page" t-att-data-open="open_id or None">
                 <t t-call="portal.portal_searchbar">
                     <t t-set="title">Notifications</t>
-                    <div t-if="unread_count" class="o_wpn_read_all_wrap">
+                </t>
+
+                <!-- All / Unread / Read, always in view (the search bar folds its
+                     filters away on phones) -->
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                    <ul class="nav nav-pills o_wpn_filters">
+                        <li class="nav-item">
+                            <a t-attf-class="nav-link #{'active' if filterby == 'all' else ''}"
+                               t-attf-href="/my/notifications?#{keep_query('search')}">All</a>
+                        </li>
+                        <li class="nav-item">
+                            <a t-attf-class="nav-link #{'active' if filterby == 'unread' else ''}"
+                               t-attf-href="/my/notifications?#{keep_query('search', filterby='unread')}">
+                                Unread <span t-attf-class="badge rounded-pill ms-1 o_wpn_unread_count #{'text-bg-light' if filterby == 'unread' else 'text-bg-primary'} #{'' if unread_count else 'd-none'}" t-out="unread_count"/>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a t-attf-class="nav-link #{'active' if filterby == 'read' else ''}"
+                               t-attf-href="/my/notifications?#{keep_query('search', filterby='read')}">Read</a>
+                        </li>
+                    </ul>
+                    <div t-attf-class="ms-auto o_wpn_read_all_wrap #{'' if unread_count else 'd-none'}">
                         <button type="button" class="btn btn-light o_wpn_read_all" t-att-data-search="search or ''">
                             <i class="fa fa-check me-1" aria-hidden="true"/>Mark all as read
                         </button>
                     </div>
-                </t>
+                </div>
 
                 <div t-foreach="extras" t-as="extra" role="status"
                      class="alert alert-info d-flex flex-wrap align-items-center gap-2">
@@ -95,6 +116,7 @@
                 <div t-if="not items" class="alert alert-warning" role="alert">
                     <t t-if="search">No notifications match your search.</t>
                     <t t-elif="filterby == 'unread'">You have no unread notifications.</t>
+                    <t t-elif="filterby == 'read'">You have no read notifications.</t>
                     <t t-else="">There are currently no notifications for your account.</t>
                 </div>
                 <t t-if="items" t-call="portal.portal_table">

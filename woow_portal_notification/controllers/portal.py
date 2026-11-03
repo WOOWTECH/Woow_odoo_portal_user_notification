@@ -56,6 +56,8 @@ class PortalNotificationCenter(CustomerPortal):
         domain = [('res_partner_id', '=', partner.id)]
         if filterby == 'unread':
             domain.append(('is_read', '=', False))
+        elif filterby == 'read':
+            domain.append(('is_read', '=', True))
         if search:
             # one subquery on this partner's messages
             domain.append(('mail_message_id', 'any', [
@@ -320,7 +322,7 @@ class PortalNotificationCenter(CustomerPortal):
         if not user._is_portal():
             return request.redirect(BACKEND_INBOX)
         partner = user.partner_id
-        filterby = filterby if filterby in ('all', 'unread') else 'all'
+        filterby = filterby if filterby in ('all', 'unread', 'read') else 'all'
         search = (search or '').strip()[:SEARCH_CHARS]
         Notification = request.env['mail.notification'].sudo()
         domain = self._wpn_domain(partner, filterby, search)
@@ -356,12 +358,10 @@ class PortalNotificationCenter(CustomerPortal):
         values.update({
             'page_name': 'wpn_notifications',
             'default_url': '/my/notifications',
-            # Odoo's portal search bar
-            'searchbar_filters': {
-                'all': {'label': _('All')},
-                'unread': {'label': _('Unread (%s)', unread_count)},
-            },
+            # All / Unread / Read: a switch shown under Odoo's search bar
+            # (whose filter menu folds away on phones)
             'filterby': filterby,
+            # Odoo's portal search bar: search only
             'searchbar_inputs': {
                 'all': {'input': 'all', 'label': _('Search in notifications')},
             },
