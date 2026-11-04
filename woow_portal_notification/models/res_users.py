@@ -33,15 +33,20 @@ class ResUsers(models.Model):
         """mail.notification domain of what the centre shows this user.
 
         A portal customer sees their notifications of public messages (no
-        internal note or internal subtype), also when the partner was an
-        internal user's before.  An internal user sees the part their portal
+        internal note or internal subtype) and the ones Odoo sends to them
+        directly by e-mail (message_notify: follower invitations, ...), but
+        not what was left in an Inbox when the partner was an internal
+        user's.  An internal user sees the part their portal
         shows them too (see _wpn_portal_scope_domain), not their backend
         inbox."""
         self.ensure_one()
         domain = [('res_partner_id', '=', self.partner_id.id)]
         if self._is_portal():
             return expression.AND([domain, [
-                ('mail_message_id', 'any', self._wpn_public_message_domain())]])
+                '|',
+                ('mail_message_id', 'any', self._wpn_public_message_domain()),
+                '&', ('notification_type', '=', 'email'),
+                ('mail_message_id.message_type', '=', 'user_notification')]])
         return expression.AND([domain, self._wpn_portal_scope_domain()])
 
     @api.model

@@ -451,3 +451,32 @@ class TestPortalNotification(HttpCase):
         self.assertNotIn('wpn-direct-secret-note', self.url_open('/my/notifications').text)
         self.assertNotIn('wpn-direct-secret-note',
                          self.url_open('/my/notifications?open=%d' % direct.id).text)
+
+    def test_direct_user_notification_stays_visible_to_portal_user(self):
+        """Odoo's own notifications to a person (message_notify: follower
+        invitations, ...) are internal Notes by subtype; a portal user still
+        gets them in the centre, while the Inbox leftovers of a former
+        internal user stay out."""
+        user = self._former_staff()
+        old = self._notif(self.thread.message_notify(
+            partner_ids=[user.partner_id.id], body=Markup('<p>wpn-old-inbox-notice</p>'),
+            subject='wpn old'), user)
+        self.assertEqual(old.notification_type, 'inbox')
+        user.write({'groups_id': [Command.set([self.env.ref('base.group_portal').id])]})
+        direct = self._notif(self.thread.message_notify(
+            partner_ids=[self.portal_user.partner_id.id], body=Markup('<p>wpn-direct-ok</p>'),
+            subject='wpn direct'), self.portal_user)
+        self.assertEqual(direct.notification_type, 'email')
+        self.assertFalse(direct.is_read)
+        self.assertEqual(self.portal_user._wpn_unread_count(), 1)
+        self.assertEqual(user._wpn_unread_count(), 0, "the leftover Inbox notice is not listed")
+
+        self._login_portal()
+        self.assertIn('wpn-direct-ok', self.url_open('/my/notifications').text)
+        html = self.url_open('/my/notifications?open=%d' % direct.id).text
+        self.assertIn('data-open="%d"' % direct.id, html)
+
+        self.authenticate('wpn_former', 'wpn_former_pw!')
+        self.assertNotIn('wpn-old-inbox-notice', self.url_open('/my/notifications').text)
+        self.assertNotIn('wpn-old-inbox-notice',
+                         self.url_open('/my/notifications?open=%d' % old.id).text)

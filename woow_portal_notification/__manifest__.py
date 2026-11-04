@@ -25,7 +25,7 @@ so it looks like the rest of the portal and follows the website theme:
   to the name, on every website page.
 
 Portal customers see their notifications of public messages (no internal
-note).  Internal users (all of them
+note) and those Odoo sends them directly.  Internal users (all of them
 by default) see the part their portal shows them: public messages (no
 internal note) on the documents of their portal (orders, invoices, portal
 projects and tasks, ...); their backend Inbox shares the read state.  Bridges (installed automatically) link subscriptions, assigned leads
