@@ -1,4 +1,4 @@
-from odoo import models
+from odoo import api, models
 from odoo.exceptions import AccessError
 from odoo.osv import expression
 from odoo.tools import SQL
@@ -32,15 +32,24 @@ class ResUsers(models.Model):
     def _wpn_notification_domain(self):
         """mail.notification domain of what the centre shows this user.
 
-        A portal customer sees all their notifications: Odoo only notifies
-        them of public messages.  An internal user sees the part their portal
+        A portal customer sees their notifications of public messages (no
+        internal note or internal subtype), also when the partner was an
+        internal user's before.  An internal user sees the part their portal
         shows them too (see _wpn_portal_scope_domain), not their backend
         inbox."""
         self.ensure_one()
         domain = [('res_partner_id', '=', self.partner_id.id)]
         if self._is_portal():
-            return domain
+            return expression.AND([domain, [
+                ('mail_message_id', 'any', self._wpn_public_message_domain())]])
         return expression.AND([domain, self._wpn_portal_scope_domain()])
+
+    @api.model
+    def _wpn_public_message_domain(self):
+        """mail.message domain of public messages: no internal note, no
+        internal subtype."""
+        return [('is_internal', '=', False),
+                '|', ('subtype_id', '=', False), ('subtype_id.internal', '=', False)]
 
     def _wpn_portal_scope_domain(self):
         """Notifications of an internal user that belong in their portal:
@@ -70,7 +79,7 @@ class ResUsers(models.Model):
         if not clauses:
             return expression.FALSE_DOMAIN
         return [('mail_message_id', 'any', expression.AND([
-            [('is_internal', '=', False), '|', ('subtype_id', '=', False), ('subtype_id.internal', '=', False)],
+            self._wpn_public_message_domain(),
             expression.OR(clauses),
         ]))]
 

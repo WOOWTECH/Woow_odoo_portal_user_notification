@@ -43,6 +43,8 @@ of the portal and follows the website theme.
 **Everywhere in the portal**
 - Opening a document reads the notifications about it.
 
+A portal customer sees only the notifications of public messages (internal notes and internal subtypes are never listed).
+
 ## Internal users
 
 All internal users get the centre by default (the system parameter

@@ -402,3 +402,52 @@ class TestPortalNotification(HttpCase):
         member.groups_id = [Command.link(self.env.ref('woow_portal_notification.group_internal_centre').id)]
         self.assertTrue(member._wpn_uses_centre())
         self.assertEqual(self.url_open('/my/notifications', allow_redirects=False).status_code, 200)
+
+    # --- internal messages stay out of a portal user's centre --------------
+
+    def _former_staff(self):
+        """An internal user (Inbox handling) who is later changed to portal."""
+        user = self.env['res.users'].with_context(no_reset_password=True).create({
+            'name': 'Wpn Former', 'login': 'wpn_former', 'password': 'wpn_former_pw!',
+            'email': 'wpn_former@example.invalid', 'notification_type': 'inbox',
+            'groups_id': [Command.set([self.env.ref('base.group_user').id])],
+        })
+        self.thread.message_subscribe([user.partner_id.id])
+        return user
+
+    def test_portal_user_does_not_see_internal_messages(self):
+        user = self._former_staff()
+        note = self._notif(self._note('<p>wpn-former-secret-note</p>', user), user)
+        public = self._notif(self._post('<p>wpn-former-public</p>'), user)
+        self.assertTrue(note and public)
+        user.write({'groups_id': [Command.set([self.env.ref('base.group_portal').id])]})
+        self.assertTrue(user._is_portal())
+        # a note sent straight to a portal customer (e-mail) is not listed either
+        direct = self._notif(self._note('<p>wpn-direct-secret-note</p>', self.portal_user), self.portal_user)
+        self.assertTrue(direct)
+        self.assertEqual(user._wpn_unread_count(), 1, "only the public message counts")
+        self.assertEqual(self.portal_user._wpn_unread_count(), 1,
+                         "the public message only, not the note sent to them")
+
+        self.authenticate('wpn_former', 'wpn_former_pw!')
+        html = self.url_open('/my/notifications').text
+        self.assertIn('wpn-former-public', html, "external messages are still listed")
+        self.assertNotIn('wpn-former-secret-note', html)
+        self.assertNotIn('wpn-former-secret-note',
+                         self.url_open('/my/notifications?search=wpn-former-secret').text)
+        html = self.url_open('/my/notifications?open=%d' % note.id).text
+        self.assertNotIn('wpn-former-secret-note', html)
+        response = self.url_open('/my/notifications/%d/open' % note.id, allow_redirects=False)
+        self.assertTrue(response.headers['Location'].endswith('/my/notifications'))
+        result = self.make_jsonrpc_request('/my/notifications/read', {
+            'notification_ids': [note.id, public.id], 'read': True})
+        self.assertEqual(result['updated'], [public.id])
+        # the legitimate flow: the public message opens as before
+        html = self.url_open('/my/notifications?open=%d' % public.id).text
+        self.assertIn('data-open="%d"' % public.id, html)
+        self.assertIn('wpn-former-public', html)
+
+        self._login_portal()
+        self.assertNotIn('wpn-direct-secret-note', self.url_open('/my/notifications').text)
+        self.assertNotIn('wpn-direct-secret-note',
+                         self.url_open('/my/notifications?open=%d' % direct.id).text)
