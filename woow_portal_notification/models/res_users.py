@@ -4,18 +4,30 @@ from odoo.osv import expression
 from odoo.tools import SQL
 
 GROUP_INTERNAL = 'woow_portal_notification.group_internal_centre'
+# System parameter: which internal users get the centre.  "1" (default): all
+# of them; "group": the members of GROUP_INTERNAL; "0": none (backend Inbox).
+PARAM_INTERNAL_USERS = 'woow_portal_notification.internal_users'
 
 
 class ResUsers(models.Model):
     _inherit = 'res.users'
 
     def _wpn_uses_centre(self):
-        """Portal customers, and the internal users of the group "Portal
-        notification centre for internal users"."""
+        """Portal customers, and internal users as the system parameter
+        woow_portal_notification.internal_users says: all of them by default
+        ("1"), the members of the group "Portal notification centre for
+        internal users" ("group"), or none ("0")."""
         self.ensure_one()
         if self._is_public():
             return False
-        return self._is_portal() or self.has_group(GROUP_INTERNAL)
+        if self._is_portal():
+            return True
+        if not self._is_internal():
+            return False
+        mode = self.env['ir.config_parameter'].sudo().get_param(PARAM_INTERNAL_USERS, '1')
+        if mode == 'group':
+            return self.has_group(GROUP_INTERNAL)
+        return mode not in ('0', 'False', 'false', '')
 
     def _wpn_notification_domain(self):
         """mail.notification domain of what the centre shows this user.

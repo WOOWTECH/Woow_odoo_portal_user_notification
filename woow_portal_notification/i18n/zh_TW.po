@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0-20250807\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-04 01:21+0000\n"
-"PO-Revision-Date: 2026-11-04 01:21+0000\n"
+"POT-Creation-Date: 2026-11-04 02:48+0000\n"
+"PO-Revision-Date: 2026-11-04 02:48+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_TW\n"
@@ -139,14 +139,6 @@ msgid "Search in notifications"
 msgstr "搜尋通知"
 
 #. module: woow_portal_notification
-#: model:res.groups,comment:woow_portal_notification.group_internal_centre
-msgid ""
-"Shows this internal user the portal notification centre: notifications about"
-" the documents of their portal (orders, invoices, portal projects and tasks,"
-" office assistant, ...), not internal notes."
-msgstr "讓這位內部使用者也使用 portal 通知中心：顯示他 portal 上單據（訂單、發票、portal 專案與任務、辦公助理…）的通知，不含內部備註。"
-
-#. module: woow_portal_notification
 #: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
 msgid "There are currently no notifications for your account."
 msgstr "目前你的帳戶沒有任何通知。"
@@ -165,6 +157,15 @@ msgstr "則未讀通知"
 #: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_home
 msgid "Updates about your orders, projects and other documents"
 msgstr "訂單、專案與其他文件的最新消息"
+
+#. module: woow_portal_notification
+#: model:res.groups,comment:woow_portal_notification.group_internal_centre
+msgid ""
+"Used when the system parameter woow_portal_notification.internal_users is "
+"\"group\": only the internal users of this group get the portal notification"
+" centre (notifications about the documents of their portal, not internal "
+"notes). By default all internal users get it."
+msgstr "系統參數 woow_portal_notification.internal_users 設成「group」時才用到：只有這個群組裡的內部使用者有 portal 通知中心（顯示他 portal 上單據的通知，不含內部備註）。預設是所有內部使用者都有。"
 
 #. module: woow_portal_notification
 #: model:ir.model,name:woow_portal_notification.model_res_users

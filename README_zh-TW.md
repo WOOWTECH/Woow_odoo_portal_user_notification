@@ -41,13 +41,13 @@ Odoo 會寄 email 通知客戶訂單、發票、專案的消息，但 portal 裡
 
 ## 內部使用者
 
-內部使用者要加入群組「**內部使用者使用 portal 通知中心**」（設定 > 使用者，開發者模式）才有通知中心，看到的是他 portal 上本來就看得到的，不是後台收件匣：
+所有內部使用者預設都有通知中心。下方的系統參數 `woow_portal_notification.internal_users` 可以改成只開給群組「**內部使用者使用 portal 通知中心**」，或整個關掉。他們看到的是自己 portal 上本來就看得到的，不是後台收件匣：
 
 - 只有對外訊息：內部備註、活動、指派都不顯示；
 - 只有他 portal 上的單據：他關注的訂單與發票、portal 上分享的專案與任務、他自己的報帳／請假／出勤（辦公助理）、已發布的網站內容；
 - 已讀狀態和後台收件匣是同一份：在一邊看過，另一邊也算已讀。設定「用 Email 處理」的人，通知中心會顯示的新通知會保留未讀，所以也會出現在他的後台收件匣；其餘維持 Odoo 原本的做法。
 
-其他內部使用者打開 `/my/notifications` 會被帶到後台收件匣，`/my` 維持 Odoo 原樣。
+沒有通知中心的內部使用者打開 `/my/notifications` 會被帶到後台收件匣，`/my` 維持 Odoo 原樣。
 
 ## 運作方式
 
@@ -71,6 +71,7 @@ Odoo 會寄 email 通知客戶訂單、發票、專案的消息，但 portal 裡
 |---|---|---|
 | `woow_portal_notification.portal_unread` | `1` | portal 使用者的新通知以未讀建立 |
 | `woow_portal_notification.home_summary` | `1` | `/my` 顯示通知卡片 |
+| `woow_portal_notification.internal_users` | `1` | 哪些內部使用者有通知中心：`1` 全部、`group` 只有上述群組成員、`0` 都沒有 |
 
 ## 測試
 

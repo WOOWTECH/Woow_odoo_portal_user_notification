@@ -45,9 +45,10 @@ of the portal and follows the website theme.
 
 ## Internal users
 
-Internal users get the centre only when they are in the group **Portal
-notification centre for internal users** (Settings > Users, debug mode). They
-then see what their portal shows them, not their backend Inbox:
+All internal users get the centre by default (the system parameter
+`woow_portal_notification.internal_users` below can limit it to the group
+**Portal notification centre for internal users**, or turn it off). They see
+what their portal shows them, not their backend Inbox:
 
 - public messages only: internal notes, activities and assignments stay out;
 - about documents of their portal: orders and invoices they follow, projects
@@ -58,8 +59,8 @@ then see what their portal shows them, not their backend Inbox:
   e-mail, the new notifications the centre shows are kept unread, so they
   also appear in the backend Inbox; everything else stays as Odoo makes it.
 
-Other internal users are sent to the backend Inbox by `/my/notifications`,
-and `/my` stays as Odoo renders it for them.
+Internal users without the centre are sent to the backend Inbox by
+`/my/notifications`, and `/my` stays as Odoo renders it for them.
 
 ## How it works
 
@@ -84,6 +85,7 @@ System parameters (Settings > Technical > System Parameters). Set a value to
 |---|---|---|
 | `woow_portal_notification.portal_unread` | `1` | Keep portal users' new notifications unread |
 | `woow_portal_notification.home_summary` | `1` | Show the notification cards on `/my` |
+| `woow_portal_notification.internal_users` | `1` | Internal users who get the centre: `1` all, `group` only the members of the group above, `0` none |
 
 ## Tests
 

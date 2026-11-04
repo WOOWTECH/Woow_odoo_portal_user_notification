@@ -1,7 +1,6 @@
 from odoo import api, models
 from odoo.osv import expression
 
-from .res_users import GROUP_INTERNAL
 
 # System parameter: "0" keeps Odoo's default (e-mail notifications are
 # created already read).
@@ -18,10 +17,11 @@ class MailNotification(models.Model):
         portal notification centre is an inbox, so keep them unread:
 
         - portal customers: all of them;
-        - internal users of the centre's group: only those the centre shows
-          them (public messages on records of their portal).  Their backend
-          inbox shares the read state, so those appear there unread too;
-          the rest stays as Odoo made it.
+        - internal users of the centre (all of them by default, see
+          res.users._wpn_uses_centre): only those the centre shows them
+          (public messages on records of their portal).  Their backend inbox
+          shares the read state, so those appear there unread too; the rest
+          stays as Odoo made it.
         """
         enabled = None
         candidates = {
@@ -58,11 +58,11 @@ class MailNotification(models.Model):
     @api.model
     def _wpn_centre_partners(self, partner_ids):
         """(partners whose active users are all portal users,
-            internal users of the centre's group among those partners)"""
+            internal users of the centre among those partners)"""
         users = self.env['res.users'].sudo().search(
             [('partner_id', 'in', list(partner_ids))])
         portal = set(users.filtered(lambda u: u._is_portal()).partner_id.ids)
         internal_users = users.filtered(lambda u: not u.share)
         internal = set(internal_users.partner_id.ids)
-        members = internal_users.filtered(lambda u: u.has_group(GROUP_INTERNAL))
+        members = internal_users.filtered(lambda u: u._wpn_uses_centre())
         return portal - internal, members

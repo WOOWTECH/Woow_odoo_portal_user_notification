@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Internal users of this group get the portal notification centre too,
-         limited to what their portal shows them (public messages on their
-         portal documents); everyone else keeps the backend Inbox. -->
+    <!-- With the system parameter woow_portal_notification.internal_users
+         set to "group", only the internal users of this group get the
+         portal notification centre (by default all internal users do). -->
     <record id="group_internal_centre" model="res.groups">
         <field name="name">Portal notification centre for internal users</field>
-        <field name="comment">Shows this internal user the portal notification centre: notifications about the documents of their portal (orders, invoices, portal projects and tasks, office assistant, ...), not internal notes.</field>
+        <field name="comment">Used when the system parameter woow_portal_notification.internal_users is "group": only the internal users of this group get the portal notification centre (notifications about the documents of their portal, not internal notes). By default all internal users get it.</field>
     </record>
 
 </odoo>

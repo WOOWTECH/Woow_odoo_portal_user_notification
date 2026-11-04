@@ -127,7 +127,8 @@ class TestPortalNotification(HttpCase):
         visitors = {  # login, password, counts shown, menu entry shown
             'portal': ('wpn_portal', 'wpn_portal_pw!', {'3'}, True),
             'other': ('wpn_other', 'wpn_other_pw!', {'1'}, True),
-            'staff': ('wpn_staff', 'wpn_staff_pw!', set(), False),
+            # internal users get the centre by default; nothing of theirs is portal-scoped here
+            'staff': ('wpn_staff', 'wpn_staff_pw!', set(), True),
             'public': (None, None, set(), False),
         }
         names = {'portal': 'Wpn Customer', 'other': 'Wpn Other', 'staff': 'Wpn Staff'}
@@ -173,7 +174,8 @@ class TestPortalNotification(HttpCase):
                     self.assertEqual(navbar, [True, False, False],
                                      "after the first visitor the navbar comes from the cache")
 
-    def test_internal_user_is_sent_to_the_backend_inbox(self):
+    def test_internal_users_switched_off_go_to_the_backend_inbox(self):
+        self.env['ir.config_parameter'].sudo().set_param('woow_portal_notification.internal_users', '0')
         self._post('<p>for staff</p>')
         self.authenticate('wpn_staff', 'wpn_staff_pw!')
         response = self.url_open('/my/notifications', allow_redirects=False)
@@ -317,13 +319,12 @@ class TestPortalNotification(HttpCase):
         self.assertTrue(miss.is_read)
         self.assertEqual(self.portal_user._wpn_unread_count(), 0)
 
-    # --- internal users of the centre's group -----------------------------
+    # --- internal users (all of them by default) ---------------------------
 
     def _make_member(self, notification_type='email'):
-        self.internal_user.write({
-            'notification_type': notification_type,
-            'groups_id': [Command.link(self.env.ref('woow_portal_notification.group_internal_centre').id)],
-        })
+        """An internal user, not in any extra group: the default gives them
+        the centre."""
+        self.internal_user.notification_type = notification_type
         return self.internal_user
 
     def _as_portal_document(self):
@@ -388,3 +389,16 @@ class TestPortalNotification(HttpCase):
             notif = self._notif(self._post('<p>wpn-switched-off</p>'), member)
         self.assertTrue(notif.is_read)
 
+    def test_internal_users_group_mode(self):
+        """woow_portal_notification.internal_users = "group": only the
+        members of the group get the centre."""
+        self.env['ir.config_parameter'].sudo().set_param('woow_portal_notification.internal_users', 'group')
+        member = self._make_member('email')
+        self.assertFalse(member._wpn_uses_centre())
+        self.authenticate('wpn_staff', 'wpn_staff_pw!')
+        response = self.url_open('/my/notifications', allow_redirects=False)
+        self.assertEqual(response.status_code, 303)
+        self.assertTrue(response.headers['Location'].endswith('/odoo/discuss'))
+        member.groups_id = [Command.link(self.env.ref('woow_portal_notification.group_internal_centre').id)]
+        self.assertTrue(member._wpn_uses_centre())
+        self.assertEqual(self.url_open('/my/notifications', allow_redirects=False).status_code, 200)

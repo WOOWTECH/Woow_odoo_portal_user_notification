@@ -1,6 +1,6 @@
 {
     "name": "Portal Notification Centre",
-    "version": "18.0.1.1.0",
+    "version": "18.0.1.2.0",
     "category": "Website",
     "summary": "An inbox for portal customers: unread notifications, "
                "Odoo's own cards on /my, and a notification list page",
@@ -24,17 +24,19 @@ so it looks like the rest of the portal and follows the website theme:
 * the user menu gets a "Notifications" entry, and the unread count shows next
   to the name, on every website page.
 
-Portal customers see all their notifications.  Internal users of the group
-"Portal notification centre for internal users" see the part their portal
-shows them: public messages (no internal note) on the documents of their
-portal (orders, invoices, portal projects and tasks, ...); their backend Inbox
-shares the read state.  Other internal users are sent to their backend Inbox.  Bridges (installed automatically) link subscriptions, assigned leads
+Portal customers see all their notifications.  Internal users (all of them
+by default) see the part their portal shows them: public messages (no
+internal note) on the documents of their portal (orders, invoices, portal
+projects and tasks, ...); their backend Inbox shares the read state.  Bridges (installed automatically) link subscriptions, assigned leads
 and loyalty cards to their pages, and count unread conversations.
 
 Settings (system parameters, "0" turns the feature off):
 
 * ``woow_portal_notification.portal_unread``: keep portal notifications unread;
-* ``woow_portal_notification.home_summary``: notification cards on /my.
+* ``woow_portal_notification.home_summary``: notification cards on /my;
+* ``woow_portal_notification.internal_users``: "1" all internal users get the
+  centre (default), "group" only the members of the group "Portal
+  notification centre for internal users", "0" none (backend Inbox).
     """,
     "author": "Woow Tech",
     "website": "https://www.woow.tw",
