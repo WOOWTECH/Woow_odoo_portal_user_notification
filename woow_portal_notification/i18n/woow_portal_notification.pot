@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0-20250807\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-03 12:13+0000\n"
-"PO-Revision-Date: 2026-11-03 12:13+0000\n"
+"POT-Creation-Date: 2026-11-04 01:21+0000\n"
+"PO-Revision-Date: 2026-11-04 01:21+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -25,13 +25,6 @@ msgstr ""
 msgid ""
 "<i class=\"fa fa-fw fa-bell-o me-1 small text-primary text-primary-"
 "emphasis\"/> Notifications"
-msgstr ""
-
-#. module: woow_portal_notification
-#: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
-msgid ""
-"<span class=\"badge rounded-pill text-bg-primary ms-1 "
-"o_wpn_unread_badge\">Unread</span>"
 msgstr ""
 
 #. module: woow_portal_notification
@@ -129,6 +122,11 @@ msgid "Number of unread notifications"
 msgstr ""
 
 #. module: woow_portal_notification
+#: model:res.groups,name:woow_portal_notification.group_internal_centre
+msgid "Portal notification centre for internal users"
+msgstr ""
+
+#. module: woow_portal_notification
 #: model_terms:ir.ui.view,arch_db:woow_portal_notification.portal_my_notifications
 msgid "Read"
 msgstr ""
@@ -137,6 +135,14 @@ msgstr ""
 #. odoo-python
 #: code:addons/woow_portal_notification/controllers/portal.py:0
 msgid "Search in notifications"
+msgstr ""
+
+#. module: woow_portal_notification
+#: model:res.groups,comment:woow_portal_notification.group_internal_centre
+msgid ""
+"Shows this internal user the portal notification centre: notifications about"
+" the documents of their portal (orders, invoices, portal projects and tasks,"
+" office assistant, ...), not internal notes."
 msgstr ""
 
 #. module: woow_portal_notification

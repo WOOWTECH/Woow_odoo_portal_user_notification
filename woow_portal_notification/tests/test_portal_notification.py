@@ -179,7 +179,9 @@ class TestPortalNotification(HttpCase):
         response = self.url_open('/my/notifications', allow_redirects=False)
         self.assertEqual(response.status_code, 303)
         self.assertTrue(response.headers['Location'].endswith('/odoo/discuss'))
-        self.assertNotIn('o_wpn_greeting', self.url_open('/my/home').text)
+        html = self.url_open('/my/home').text
+        self.assertNotIn('o_wpn_greeting', html)
+        self.assertNotIn('href="/my/notifications" role="menuitem"', html)
         self.assertEqual(self._counters()['wpn_unread_count'], 0)
 
     # --- /my/notifications --------------------------------------------------
@@ -314,3 +316,75 @@ class TestPortalNotification(HttpCase):
         self.make_jsonrpc_request('/my/notifications/read_all', {})
         self.assertTrue(miss.is_read)
         self.assertEqual(self.portal_user._wpn_unread_count(), 0)
+
+    # --- internal users of the centre's group -----------------------------
+
+    def _make_member(self, notification_type='email'):
+        self.internal_user.write({
+            'notification_type': notification_type,
+            'groups_id': [Command.link(self.env.ref('woow_portal_notification.group_internal_centre').id)],
+        })
+        return self.internal_user
+
+    def _as_portal_document(self):
+        """Let the test contact count as a document of the portal, as a
+        portal.mixin document would (contacts have no portal page)."""
+        return patch.object(type(self.env['res.partner']), '_wpn_portal_record_domain', lambda self: [])
+
+    def _note(self, body, user):
+        return self.thread.message_post(
+            body=Markup(body), message_type='comment', subtype_xmlid='mail.mt_note',
+            partner_ids=[user.partner_id.id])
+
+    def test_internal_member_sees_the_portal_part_only(self):
+        member = self._make_member('email')
+        with self._as_portal_document():
+            public = self._notif(self._post('<p>wpn-public-for-staff</p>'), member)
+            note = self._notif(self._note('<p>wpn-internal-note</p>', member), member)
+            self.assertEqual(public.notification_type, 'email')
+            self.assertFalse(public.is_read, "handled by e-mail, kept unread for the centre")
+            self.assertTrue(note.is_read, "an internal note stays as Odoo makes it")
+
+            self.authenticate('wpn_staff', 'wpn_staff_pw!')
+            response = self.url_open('/my/notifications', allow_redirects=False)
+            self.assertEqual(response.status_code, 200)
+            self.assertIn('wpn-public-for-staff', response.text)
+            self.assertNotIn('wpn-internal-note', response.text)
+            html = self.url_open('/my/home').text
+            self.assertIn('o_wpn_greeting', html)
+            self.assertIn('href="/my/notifications" role="menuitem"', html)
+            self.assertRegex(html, r'o_wpn_unread_count"[^>]*>1<')
+            self.assertEqual(self._counters()['wpn_unread_count'], 1)
+            # out of the centre: not opened, not read
+            response = self.url_open('/my/notifications/%d/open' % note.id, allow_redirects=False)
+            self.assertTrue(response.headers['Location'].endswith('/my/notifications'))
+            result = self.make_jsonrpc_request('/my/notifications/read', {
+                'notification_ids': [note.id, public.id], 'read': True})
+            self.assertEqual(result['updated'], [public.id])
+            self.assertEqual(result['unread_count'], 0)
+
+        # a document without a portal page is not part of their portal
+        self.assertNotIn('wpn-public-for-staff', self.url_open('/my/notifications').text)
+        self.assertEqual(member._wpn_unread_count(), 0)
+
+    def test_internal_member_shares_the_inbox_read_state(self):
+        member = self._make_member('inbox')
+        with self._as_portal_document():
+            message = self._post('<p>wpn-inbox-staff</p>')
+            notif = self._notif(message, member)
+            self.assertEqual(notif.notification_type, 'inbox')
+            self.assertFalse(notif.is_read)
+            self.assertTrue(message.with_user(member).needaction, "in the backend inbox")
+            self.authenticate('wpn_staff', 'wpn_staff_pw!')
+            self.make_jsonrpc_request('/my/notifications/read', {'notification_ids': [notif.id], 'read': True})
+            self.env.invalidate_all()
+            self.assertTrue(notif.is_read)
+            self.assertFalse(message.with_user(member).needaction, "read in the backend inbox too")
+
+    def test_internal_member_switch_off_keeps_odoo_default(self):
+        member = self._make_member('email')
+        self.env['ir.config_parameter'].sudo().set_param('woow_portal_notification.portal_unread', '0')
+        with self._as_portal_document():
+            notif = self._notif(self._post('<p>wpn-switched-off</p>'), member)
+        self.assertTrue(notif.is_read)
+

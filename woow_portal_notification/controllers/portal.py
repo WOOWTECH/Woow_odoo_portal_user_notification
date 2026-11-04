@@ -9,6 +9,7 @@ from odoo import _, http
 from odoo.exceptions import AccessError, MissingError
 from odoo.fields import Datetime as FieldDatetime
 from odoo.http import request
+from odoo.osv import expression
 from odoo.tools import SQL, format_amount
 from odoo.tools.mail import html_to_inner_content
 from odoo.tools.misc import babel_locale_parse, format_date, format_datetime
@@ -54,8 +55,10 @@ class PortalNotificationCenter(CustomerPortal):
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _wpn_domain(partner, filterby='all', search=None):
-        domain = [('res_partner_id', '=', partner.id)]
+    def _wpn_domain(user, filterby='all', search=None):
+        """The notifications the centre shows the user (see
+        res.users._wpn_notification_domain), filtered and searched."""
+        domain = list(user._wpn_notification_domain())
         if filterby == 'unread':
             domain.append(('is_read', '=', False))
         elif filterby == 'read':
@@ -282,7 +285,7 @@ class PortalNotificationCenter(CustomerPortal):
     @http.route()
     def home(self, **kw):
         response = super().home(**kw)
-        if request.env.user._is_portal() and getattr(response, 'qcontext', None) is not None:
+        if request.env.user._wpn_uses_centre() and getattr(response, 'qcontext', None) is not None:
             response.qcontext['wpn_greetings'] = self._wpn_greetings()
             self._wpn_no_store(response)
         return response
@@ -292,12 +295,12 @@ class PortalNotificationCenter(CustomerPortal):
         wanted = {'wpn_unread_count', 'wpn_notification_count'} & set(counters or ())
         if wanted:
             user = request.env.user
-            shown = user._is_portal() and _param_enabled(PARAM_HOME_SUMMARY)
+            shown = user._wpn_uses_centre() and _param_enabled(PARAM_HOME_SUMMARY)
             if 'wpn_unread_count' in wanted:
                 values['wpn_unread_count'] = user._wpn_unread_count() if shown else 0
             if 'wpn_notification_count' in wanted:
                 values['wpn_notification_count'] = request.env['mail.notification'].sudo().search_count(
-                    self._wpn_domain(user.partner_id)) if shown else 0
+                    self._wpn_domain(user)) if shown else 0
         return values
 
     # ------------------------------------------------------------------
@@ -310,13 +313,15 @@ class PortalNotificationCenter(CustomerPortal):
             document, access_token, values, session_history, no_breadcrumbs,
             **kwargs)
         user = request.env.user
-        if document and len(document) == 1 and user._is_portal():
-            self._wpn_mark_read(request.env['mail.notification'].sudo().search([
-                ('res_partner_id', '=', user.partner_id.id),
-                ('is_read', '=', False),
-                ('mail_message_id.model', '=', document._name),
-                ('mail_message_id.res_id', '=', document.id),
-            ]))
+        if document and len(document) == 1 and user._wpn_uses_centre():
+            # only what the centre shows: an internal user's backend inbox
+            # keeps its internal notes unread
+            self._wpn_mark_read(request.env['mail.notification'].sudo().search(expression.AND([
+                user._wpn_notification_domain(),
+                [('is_read', '=', False),
+                 ('mail_message_id.model', '=', document._name),
+                 ('mail_message_id.res_id', '=', document.id)],
+            ])))
         return values
 
     # ------------------------------------------------------------------
@@ -327,13 +332,12 @@ class PortalNotificationCenter(CustomerPortal):
                 type='http', auth='user', website=True, methods=['GET'])
     def wpn_notifications(self, page=1, filterby='all', search=None, open=None, **kw):
         user = request.env.user
-        if not user._is_portal():
+        if not user._wpn_uses_centre():
             return request.redirect(BACKEND_INBOX)
-        partner = user.partner_id
         filterby = filterby if filterby in ('all', 'unread', 'read') else 'all'
         search = (search or '').strip()[:SEARCH_CHARS]
         Notification = request.env['mail.notification'].sudo()
-        domain = self._wpn_domain(partner, filterby, search)
+        domain = self._wpn_domain(user, filterby, search)
         url_args = {}
         if filterby != 'all':
             url_args['filterby'] = filterby
@@ -355,8 +359,9 @@ class PortalNotificationCenter(CustomerPortal):
         except ValueError:
             wanted = 0
         if wanted:
-            target = Notification.browse(wanted).exists()
-            if target and target.res_partner_id == partner:
+            target = Notification.search(expression.AND([
+                user._wpn_notification_domain(), [('id', '=', wanted)]]))
+            if target:
                 open_id = target.id
                 if open_id not in {item['id'] for item in modal_items}:
                     modal_items.append(self._wpn_item(target, cache, with_body=True))
@@ -391,10 +396,11 @@ class PortalNotificationCenter(CustomerPortal):
         """Read the notification and go to its document, or show the message
         in the centre when the document has no page of its own."""
         user = request.env.user
-        if not user._is_portal():
+        if not user._wpn_uses_centre():
             return request.redirect(BACKEND_INBOX)
-        notification = request.env['mail.notification'].sudo().browse(notification_id).exists()
-        if not notification or notification.res_partner_id != user.partner_id:
+        notification = request.env['mail.notification'].sudo().search(expression.AND([
+            user._wpn_notification_domain(), [('id', '=', notification_id)]]))
+        if not notification:
             return request.redirect('/my/notifications')
         self._wpn_mark_read(notification)
         url = self._wpn_document_url(notification.mail_message_id)
@@ -407,7 +413,7 @@ class PortalNotificationCenter(CustomerPortal):
         if not isinstance(read, bool):
             raise BadRequest("'read' must be true or false")
         user = request.env.user
-        if not user._is_portal():
+        if not user._wpn_uses_centre():
             return {'updated': [], 'unread_count': 0}
         if not isinstance(notification_ids, (list, tuple)):
             notification_ids = [notification_ids]
@@ -417,8 +423,8 @@ class PortalNotificationCenter(CustomerPortal):
                 ids.append(int(value))
             except (TypeError, ValueError):
                 continue
-        notifications = request.env['mail.notification'].sudo().search([
-            ('id', 'in', ids), ('res_partner_id', '=', user.partner_id.id)])
+        notifications = request.env['mail.notification'].sudo().search(expression.AND([
+            user._wpn_notification_domain(), [('id', 'in', ids)]]))
         self._wpn_mark_read(notifications, read)
         return {'updated': notifications.ids, 'unread_count': user._wpn_unread_count()}
 
@@ -427,10 +433,10 @@ class PortalNotificationCenter(CustomerPortal):
         """Mark every unread notification read, limited to the search the
         list is showing."""
         user = request.env.user
-        if not user._is_portal():
+        if not user._wpn_uses_centre():
             return {'updated': 0, 'unread_count': 0}
         search = (search or '').strip()[:SEARCH_CHARS]
         notifications = request.env['mail.notification'].sudo().search(
-            self._wpn_domain(user.partner_id, 'unread', search))
+            self._wpn_domain(user, 'unread', search))
         self._wpn_mark_read(notifications)
         return {'updated': len(notifications), 'unread_count': user._wpn_unread_count()}

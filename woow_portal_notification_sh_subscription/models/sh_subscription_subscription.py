@@ -1,8 +1,13 @@
-from odoo import models
+from odoo import api, models
 
 
 class ShSubscriptionSubscription(models.Model):
     _inherit = 'sh.subscription.subscription'
+
+    @api.model
+    def _wpn_portal_record_domain(self):
+        """The user's own subscriptions, as on their page."""
+        return [('sh_partner_id', '=', self.env.user.partner_id.id)]
 
     def _wpn_portal_url(self):
         """sh_subscription's customer page.  It lets the subscriber in by

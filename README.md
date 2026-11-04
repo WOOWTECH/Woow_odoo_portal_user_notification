@@ -16,8 +16,12 @@ portal pages, cards and layout stay as they are.
 | `woow_portal_notification_sh_subscription` | Subscription notifications open `/my/sh_subscription/<id>` | `woow_portal_notification`, `sh_subscription` |
 | `woow_portal_notification_crm` | Notifications about assigned leads and opportunities open `/my/lead/<id>` or `/my/opportunity/<id>` | `woow_portal_notification`, `website_crm_partner_assign` |
 | `woow_portal_notification_loyalty` | Gift card and eWallet notifications open `/my/loyalty_card/<id>/history` | `woow_portal_notification`, `loyalty` |
+| `woow_portal_notification_project` | For internal users, only projects and tasks shared on the portal count | `woow_portal_notification`, `project` |
+| `woow_portal_notification_hr_expense` | Expense and expense report notifications open the office assistant's `/my/expenses/<id>` | `woow_portal_notification`, `woow_hr_portal_expense` |
+| `woow_portal_notification_hr_leave` | Time off notifications open `/my/leaves/<id>` | `woow_portal_notification`, `woow_hr_portal_leave` |
+| `woow_portal_notification_hr_attendance` | Attendance notifications open `/my/attendance/<id>` | `woow_portal_notification`, `woow_hr_portal_attendance` |
 
-The four bridges install automatically when their two dependencies are present.
+The bridges install automatically when their two dependencies are present.
 
 ## What a portal customer sees
 
@@ -39,18 +43,34 @@ of the portal and follows the website theme.
 **Everywhere in the portal**
 - Opening a document reads the notifications about it.
 
-Internal users are not served. `/my/notifications` sends them to the backend
-Inbox, and `/my` stays as Odoo renders it for them.
+## Internal users
+
+Internal users get the centre only when they are in the group **Portal
+notification centre for internal users** (Settings > Users, debug mode). They
+then see what their portal shows them, not their backend Inbox:
+
+- public messages only: internal notes, activities and assignments stay out;
+- about documents of their portal: orders and invoices they follow, projects
+  and tasks shared on the portal, their own expenses, time off and
+  attendances (office assistant), published website content;
+- the read state is the one of the backend Inbox: reading a notification in
+  one place reads it in the other. For a user who handles notifications by
+  e-mail, the new notifications the centre shows are kept unread, so they
+  also appear in the backend Inbox; everything else stays as Odoo makes it.
+
+Other internal users are sent to the backend Inbox by `/my/notifications`,
+and `/my` stays as Odoo renders it for them.
 
 ## How it works
 
-- **Unread for portal users.** Odoo creates a portal user's e-mail notifications already read, because portal users have no Inbox. `mail.notification.create` keeps them unread for partners whose users are all portal users. Internal users keep Odoo's behaviour.
+- **Unread for portal users.** Odoo creates a portal user's e-mail notifications already read, because portal users have no Inbox. `mail.notification.create` keeps them unread for partners whose users are all portal users, and, for internal users of the group, keeps unread those the centre shows them.
+- **Portal scope of internal users.** `res.users._wpn_notification_domain()` is what the centre shows. For an internal user it keeps public messages on records given by `mail.thread._wpn_portal_record_domain()`: every `portal.mixin` document, published website content, and what the bridges declare (shared projects, own expenses, time off, attendances, subscriptions, cards, assigned leads). Opening a document page reads only these notifications, so internal notes stay unread in the backend Inbox.
 - **Document links.** `mail.thread._wpn_portal_url()` returns, in this order:
   1. the portal page (`access_url` of `portal.mixin`);
   2. the published website page (`website_url`);
   3. `False`, and the message is then shown in a dialog.
 
-  It is evaluated as the customer, so only pages they can read are linked. A module whose records have another customer page overrides this method; the subscription, assigned lead and loyalty bridges do.
+  It is evaluated as the user, so only pages they can read are linked. A module whose records have another page overrides this method; the subscription, assigned lead, loyalty and office assistant bridges do.
 - **Notices** above the notification list come from `PortalNotificationCenter._wpn_extra_entries()`; home cards use Odoo's counters (`_prepare_home_portal_values`). The discussions bridge uses both.
 - **Look.** Only Bootstrap SCSS variables and utility classes are used, so the pages follow the website theme. No fonts or brand colours are loaded.
 - **Schema.** Nothing is added to the database schema. Uninstalling leaves Odoo's tables as they were.
@@ -69,14 +89,16 @@ System parameters (Settings > Technical > System Parameters). Set a value to
 
 ```
 odoo -d <db> -i woow_portal_notification --test-enable \
-     --test-tags /woow_portal_notification,/woow_portal_notification_discuss,/woow_portal_notification_sh_subscription,/woow_portal_notification_crm,/woow_portal_notification_loyalty \
+     --test-tags woow_portal_notification \
      --stop-after-init
 ```
 
 The suite runs on a database with only `portal`, `mail` and this module; with
 `website` installed first and this module after (the order of a live site);
-with `woow_odoo_portal_discuss`; and with `sh_subscription`,
-`website_crm_partner_assign` and `loyalty`.
+with `woow_odoo_portal_discuss`; with `sh_subscription`,
+`website_crm_partner_assign` and `loyalty`; and with `project` and the office
+assistant (`woow_hr_portal_expense`, `woow_hr_portal_leave`,
+`woow_hr_portal_attendance`).
 
 ## History
 

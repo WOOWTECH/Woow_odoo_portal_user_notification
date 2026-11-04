@@ -16,7 +16,7 @@
                  aria-label="Number of unread notifications" t-out="wpn_unread"/>
         </xpath>
         <xpath expr="//*[@id='o_logout_divider']" position="before">
-            <a t-if="user_id._is_portal()" href="/my/notifications" role="menuitem" class="dropdown-item ps-3">
+            <a t-if="user_id._wpn_uses_centre()" href="/my/notifications" role="menuitem" class="dropdown-item ps-3">
                 <i class="fa fa-fw fa-bell-o me-1 small text-primary text-primary-emphasis"/> Notifications
                 <span t-if="wpn_unread" class="badge rounded-pill text-bg-primary ms-1 o_wpn_unread_count" t-out="wpn_unread"/>
             </a>

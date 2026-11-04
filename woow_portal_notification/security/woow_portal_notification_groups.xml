@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Internal users of this group get the portal notification centre too,
+         limited to what their portal shows them (public messages on their
+         portal documents); everyone else keeps the backend Inbox. -->
+    <record id="group_internal_centre" model="res.groups">
+        <field name="name">Portal notification centre for internal users</field>
+        <field name="comment">Shows this internal user the portal notification centre: notifications about the documents of their portal (orders, invoices, portal projects and tasks, office assistant, ...), not internal notes.</field>
+    </record>
+
+</odoo>

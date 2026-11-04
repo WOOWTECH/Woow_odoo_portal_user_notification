@@ -1,6 +1,6 @@
 {
     "name": "Portal Notification Centre - Assigned Leads",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.1.0",
     "category": "Website",
     "summary": "Notifications about assigned leads and opportunities open their portal page",
     "description": """

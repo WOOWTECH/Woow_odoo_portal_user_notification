@@ -20,6 +20,9 @@ class PortalNotificationDiscuss(PortalNotificationCenter):
 
     def _wpn_extra_entries(self):
         entries = super()._wpn_extra_entries()
+        if not request.env.user._is_portal():
+            # internal users of the centre have Discuss in the backend
+            return entries
         unread = self._wpn_unread_conversations()
         if unread:
             entries.append({

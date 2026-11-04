@@ -1,6 +1,6 @@
 {
     "name": "Portal Notification Centre - Subscriptions",
-    "version": "18.0.1.0.0",
+    "version": "18.0.1.1.0",
     "category": "Website",
     "summary": "Subscription notifications open the subscription page of sh_subscription",
     "description": """
