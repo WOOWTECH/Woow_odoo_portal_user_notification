@@ -11,14 +11,16 @@ Odoo 會寄 email 通知客戶訂單、發票、專案的消息，但 portal 裡
 | `woow_portal_notification` | portal 使用者的通知未讀機制、`/my` 的問候與通知摘要、`/my/notifications` 通知中心、使用者選單入口與頭像未讀小點 | `portal`、`mail` |
 | `woow_portal_notification_discuss` | 給 `woow_odoo_portal_discuss` 用的「未讀對話」提醒卡與提示 | `woow_portal_notification`、`woow_odoo_portal_discuss` |
 | `woow_portal_notification_sh_subscription` | 訂閱的通知直接打開 `/my/sh_subscription/<id>` | `woow_portal_notification`、`sh_subscription` |
+| `woow_portal_notification_subscription` | 給 `woow_subscription` 引擎用：訂閱的通知直接打開 `/woow` 的訂閱列表 | `woow_portal_notification`、`woow_subscription` |
 | `woow_portal_notification_crm` | 指派給客戶的潛在商機／商機通知直接打開 `/my/lead/<id>` 或 `/my/opportunity/<id>` | `woow_portal_notification`、`website_crm_partner_assign` |
 | `woow_portal_notification_loyalty` | 禮物卡、錢包點數的通知直接打開 `/my/loyalty_card/<id>/history` | `woow_portal_notification`、`loyalty` |
 | `woow_portal_notification_project` | 內部使用者只算 portal 上分享的專案與任務 | `woow_portal_notification`、`project` |
 | `woow_portal_notification_hr_expense` | 報帳、報帳單的通知打開辦公助理的 `/my/expenses/<id>` | `woow_portal_notification`、`woow_hr_portal_expense` |
 | `woow_portal_notification_hr_leave` | 請假的通知打開 `/my/leaves/<id>` | `woow_portal_notification`、`woow_hr_portal_leave` |
 | `woow_portal_notification_hr_attendance` | 出勤的通知打開 `/my/attendance/<id>` | `woow_portal_notification`、`woow_hr_portal_attendance` |
+| `woow_subscription_legacy_urls` | 舊訂閱入口頁的網址（`/my/sh_subscription…`）永久轉址到同一個訂閱列表；不是銜接模組 | `web` |
 
-銜接模組在兩個依賴都安裝時自動安裝。
+銜接模組在兩個依賴都安裝時自動安裝。`woow_subscription_legacy_urls` 例外：要手動安裝，而且只留一段時間（見下方〈訂閱模組〉）。
 
 ## 客戶看到的
 
@@ -65,6 +67,31 @@ portal 客戶不會看到內部備註，帳號由內部改成 portal 之前留�
 - **外觀**：只用 Bootstrap 的 SCSS 變數與工具類別，所以跟著網站主題走，不載入任何字型或品牌色。
 - **資料表**：不新增任何欄位或資料表，卸載後 Odoo 的資料表維持原狀。
 
+## 訂閱模組
+
+有兩個模組是配合 `woow_subscription` 用的。`woow_subscription` 是接替 `sh_subscription` 的 WOOW 訂閱引擎，獨立成另一個模組，不在這個 repo 裡。引擎沒有 portal 頁面：客戶在 `/woow` 看自己的訂閱。`/woow` 在瀏覽器裡依網址 `#` 之後的部分切換畫面，只有一個客戶自己的訂閱列表，沒有每張訂閱的明細頁。
+
+**`woow_portal_notification_subscription`**：通知中心和引擎的銜接。
+- 客戶從通知中心點開自己訂閱的通知，會到這個列表 `/woow#/billing/subscriptions`。其他人（例如只是追蹤者、不是訂閱的客戶）交回通知中心的預設：沒有頁面，改用對話視窗顯示訊息。
+- portal 使用者對訂閱沒有任何權限，所以比對「訂閱的客戶」和「使用者的聯絡人」時用 superuser，而且只讀客戶這一個欄位；因此點開通知不會出現 403。
+- 內部使用者在通知中心算進來的，是客戶為自己聯絡人的訂閱（`_wpn_portal_record_domain`），也就是他們的 `/woow` 列表看得到的那些。這要有訂閱的讀取權；沒有的話，通知中心不列訂閱的通知。
+- 只讀：沒有資料檔、掛鉤或排程，也沒有覆寫 `create`、`write`。
+- `woow_portal_notification` 與 `woow_subscription` 都在時自動安裝。Odoo 只在「安裝模組」時才自動安裝，`-u all` 不會：資料庫若在這個模組進來之前就已經裝了引擎，要用 `-i woow_portal_notification_subscription` 手動安裝。
+
+**`woow_subscription_legacy_urls`**：暫時用的配套模組，不是銜接模組。舊訂閱頁面的網址還留在已寄出的信和書籤裡：
+
+| 舊網址 | 回應 |
+|---|---|
+| `/my/sh_subscription`、`/my/sh_subscription/page/<n>`、`/my/sh_subscription/<id>` | `301`，`Location: /woow#/billing/subscriptions` |
+| `/cancel-subscription`、`/renew-subscription`（舊模組的 JSON 端點） | 不轉址，`404` |
+| `/my/sh_subscription/` 底下的其他網址 | 不轉址，`404` |
+
+- 只接 GET 與 HEAD（其他方法回 `405`），尾斜線一樣轉址。不論有沒有登入都轉址：`/woow` 自己會要求登入。不查任何資料，也不建立或儲存 session。
+- 查詢字串一律丟掉。舊頁面的分頁、排序和 `access_token` 等參數，`/woow` 都不讀，轉址也不該把 token 往外帶。
+- 用小控制器，不用 `website.rewrite`：不需要 `website` 模組、隨模組發版並在模組自己的測試裡驗證、蓋得到每張訂閱的網址（rewrite 規則只比對完全相同的路徑），而且一次轉址就到、不帶查詢字串。
+- 舊模組用的正是這些網址，所以 manifest 宣告 `excludes` 它：Odoo 不論先裝哪一個都會拒絕同時安裝，而且在寫入任何東西之前就拒絕。等 `sh_subscription` 卸載之後再手動安裝；分類是 Hidden，不會自己裝上去。
+- 預計切換之後保留六個月，之後移除。
+
 ## 設定
 
 在「設定 > 技術 > 系統參數」設定，值設為 `0` 即關閉該功能。
@@ -89,6 +116,17 @@ odoo -d <db> -i woow_portal_notification --test-enable \
 - 加裝 `woow_odoo_portal_discuss`；
 - 加裝 `sh_subscription`、`website_crm_partner_assign`、`loyalty`；
 - 加裝 `project` 與辦公助理（`woow_hr_portal_expense`、`woow_hr_portal_leave`、`woow_hr_portal_attendance`）。
+
+兩個訂閱模組有自己的測試。`woow_portal_notification_subscription` 需要 `woow_subscription` 在 addons 路徑上，以及 18.0.1.2.0 以上的通知中心（有一個測試假設所有內部使用者都有通知中心，這是從該版起的預設）；`woow_subscription_legacy_urls` 只需要 `web`：
+
+```
+odoo -d <db> -i woow_portal_notification_subscription,woow_subscription_legacy_urls \
+     --test-enable \
+     --test-tags woow_portal_notification_subscription,woow_subscription_legacy_urls \
+     --stop-after-init
+```
+
+測試在兩種資料庫上跑：只有依賴模組，以及先裝 `website` 的。
 
 ## 沿革
 
