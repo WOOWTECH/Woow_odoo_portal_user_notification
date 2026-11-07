@@ -14,14 +14,18 @@ portal pages, cards and layout stay as they are.
 | `woow_portal_notification` | Unread notifications for portal users, greeting and summary on `/my`, the `/my/notifications` page, user-menu entry and unread dot | `portal`, `mail` |
 | `woow_portal_notification_discuss` | "Unread conversations" card and notice for `woow_odoo_portal_discuss` | `woow_portal_notification`, `woow_odoo_portal_discuss` |
 | `woow_portal_notification_sh_subscription` | Subscription notifications open `/my/sh_subscription/<id>` | `woow_portal_notification`, `sh_subscription` |
+| `woow_portal_notification_subscription` | Subscription notifications open the subscription list of the `/woow` app, for the `woow_subscription` engine | `woow_portal_notification`, `woow_subscription` |
 | `woow_portal_notification_crm` | Notifications about assigned leads and opportunities open `/my/lead/<id>` or `/my/opportunity/<id>` | `woow_portal_notification`, `website_crm_partner_assign` |
 | `woow_portal_notification_loyalty` | Gift card and eWallet notifications open `/my/loyalty_card/<id>/history` | `woow_portal_notification`, `loyalty` |
 | `woow_portal_notification_project` | For internal users, only projects and tasks shared on the portal count | `woow_portal_notification`, `project` |
 | `woow_portal_notification_hr_expense` | Expense and expense report notifications open the office assistant's `/my/expenses/<id>` | `woow_portal_notification`, `woow_hr_portal_expense` |
 | `woow_portal_notification_hr_leave` | Time off notifications open `/my/leaves/<id>` | `woow_portal_notification`, `woow_hr_portal_leave` |
 | `woow_portal_notification_hr_attendance` | Attendance notifications open `/my/attendance/<id>` | `woow_portal_notification`, `woow_hr_portal_attendance` |
+| `woow_subscription_legacy_urls` | The addresses of the old subscription pages (`/my/sh_subscription…`) move permanently to the same subscription list. Not a bridge | `web` |
 
 The bridges install automatically when their two dependencies are present.
+`woow_subscription_legacy_urls` is the exception: it is installed by hand and
+only for a while (see *Subscription modules* below).
 
 ## What a portal customer sees
 
@@ -78,6 +82,36 @@ Internal users without the centre are sent to the backend Inbox by
 - **Look.** Only Bootstrap SCSS variables and utility classes are used, so the pages follow the website theme. No fonts or brand colours are loaded.
 - **Schema.** Nothing is added to the database schema. Uninstalling leaves Odoo's tables as they were.
 
+## Subscription modules
+
+Two modules go with `woow_subscription`, the WOOW subscription engine that
+takes over from `sh_subscription`. The engine is a separate module and not part
+of this repository. It has no portal pages: customers see their subscriptions
+in the `/woow` app, which routes in the browser (the part of the address after
+`#`) and has one list of the customer's subscriptions, with no page per
+subscription.
+
+**`woow_portal_notification_subscription`** links the centre to the engine.
+- A customer who opens a notification about one of their subscriptions lands on that list, `/woow#/billing/subscriptions`. Anyone else (a follower who is not the customer, say) gets the centre's default: no page, the message opens in a dialog.
+- Portal users have no access rights on subscriptions, so the customer is compared with the user's contact as superuser. Only that field is read, and opening a notification never ends in a 403.
+- For internal users the centre counts the subscriptions billed to their own contact (`_wpn_portal_record_domain`), the set their `/woow` list shows. It needs read access on subscriptions: without it the centre lists no subscription notification.
+- Read-only: no data file, hook or scheduled action, and no override of `create` or `write`.
+- Installed automatically when `woow_portal_notification` and `woow_subscription` are both present. Odoo does that when a module is installed, not on `-u all`: a database that already had the engine before this module reached it needs `-i woow_portal_notification_subscription`.
+
+**`woow_subscription_legacy_urls`** is a temporary companion, not a bridge. The addresses of the old subscription pages live on in e-mails already sent and in bookmarks:
+
+| Old address | Answer |
+|---|---|
+| `/my/sh_subscription`, `/my/sh_subscription/page/<n>`, `/my/sh_subscription/<id>` | `301`, `Location: /woow#/billing/subscriptions` |
+| `/cancel-subscription`, `/renew-subscription` (JSON endpoints of the old module) | not redirected, `404` |
+| any other address under `/my/sh_subscription/` | not redirected, `404` |
+
+- GET and HEAD only (other methods get `405`); a trailing slash is accepted. Everyone is redirected, signed in or not: `/woow` asks for the sign-in itself. Nothing is looked up and no session is started or saved.
+- The query string is dropped. `/woow` reads none of the old paging, sorting or `access_token` parameters, and a redirect has no business carrying a token any further.
+- It is a small controller rather than `website.rewrite` records: it does not need `website`, it ships and is tested with the module, it covers the address of each subscription (a rewrite rule matches one exact path), and it answers in one hop without the query string.
+- The old module serves these very addresses, so the manifest `excludes` it: Odoo refuses to install the two together, in either order, before anything is written. Install this module by hand once `sh_subscription` is uninstalled. It is in the category *Hidden* and never installs itself.
+- It is meant to stay six months after the switch, then be removed.
+
 ## Settings
 
 System parameters (Settings > Technical > System Parameters). Set a value to
@@ -103,6 +137,22 @@ with `woow_odoo_portal_discuss`; with `sh_subscription`,
 `website_crm_partner_assign` and `loyalty`; and with `project` and the office
 assistant (`woow_hr_portal_expense`, `woow_hr_portal_leave`,
 `woow_hr_portal_attendance`).
+
+The two subscription modules have their own tests.
+`woow_portal_notification_subscription` needs `woow_subscription` on the addons
+path, and this centre in version 18.0.1.2.0 or later (one of its tests relies on
+the centre being on for all internal users, the default from that version on);
+`woow_subscription_legacy_urls` needs only `web`:
+
+```
+odoo -d <db> -i woow_portal_notification_subscription,woow_subscription_legacy_urls \
+     --test-enable \
+     --test-tags woow_portal_notification_subscription,woow_subscription_legacy_urls \
+     --stop-after-init
+```
+
+They run on a database with the dependencies only and on one with `website`
+installed first.
 
 ## History
 
