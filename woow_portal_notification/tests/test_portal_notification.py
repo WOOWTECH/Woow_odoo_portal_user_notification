@@ -93,6 +93,27 @@ class TestPortalNotification(HttpCase):
         self.assertEqual(counters['wpn_unread_count'], 4)
         self.assertEqual(counters['wpn_notification_count'], 5)
 
+    def _home_categories(self):
+        """The categories of /my, in page order, each with the links of its cards."""
+        doc = lxml.html.fromstring(self.url_open('/my/home').text)
+        docs = doc.xpath('//div[contains(concat(" ", normalize-space(@class), " "), " o_portal_docs ")]')
+        self.assertEqual(len(docs), 1)
+        return [(category.get('id'), category.xpath('.//a/@href'))
+                for category in docs[0].xpath('./div[contains(concat(" ", normalize-space(@class), " "), " o_portal_category ")]')]
+
+    def test_home_notification_cards_come_first(self):
+        self._post('<p>wpn-first</p>')
+        self._login_portal()
+        categories = self._home_categories()
+        # their own category, ahead of Odoo's alert, client, service, vendor and common ones
+        self.assertEqual(categories[0][0], 'portal_wpn_category')
+        self.assertEqual(categories[0][1][:2], ['/my/notifications?filterby=unread', '/my/notifications'],
+                         "the alert card first, then the Notifications card")
+        for category_id, links in categories[1:]:
+            self.assertFalse([link for link in links if link.startswith('/my/notifications')],
+                             "no notification card left in %s" % category_id)
+        self.assertIn('portal_common_category', [category_id for category_id, links in categories])
+
     def test_home_cards_switch(self):
         self._post('<p>wpn-switch</p>')
         self.env['ir.config_parameter'].sudo().set_param(

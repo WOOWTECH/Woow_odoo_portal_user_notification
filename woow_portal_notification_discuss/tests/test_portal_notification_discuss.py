@@ -1,3 +1,4 @@
+import lxml.html
 from markupsafe import Markup
 
 from odoo import Command
@@ -31,7 +32,13 @@ class TestPortalNotificationDiscuss(HttpCase):
             body=Markup('<p>hi</p>'), message_type='comment', subtype_xmlid='mail.mt_comment')
         counters = self.make_jsonrpc_request('/my/counters', {'counters': ['wpn_unread_conversation_count']})
         self.assertEqual(counters['wpn_unread_conversation_count'], 1)
-        self.assertIn('data-placeholder_count="wpn_unread_conversation_count"', self.url_open('/my/home').text)
+        home = lxml.html.fromstring(self.url_open('/my/home').text)
+        centre = home.xpath('//div[@id="portal_wpn_category"]')
+        self.assertEqual(len(centre), 1)
+        self.assertEqual(centre[0].xpath('.//a/@href'),
+                         ['/my/notifications?filterby=unread', '/my/notifications', '/my/discussions'],
+                         "the unread conversations card sits with the other notification cards, first on /my")
+        self.assertFalse(home.xpath('//div[@id="portal_alert_category"]//a[@href="/my/discussions"]'))
         html = self.url_open('/my/notifications').text
         self.assertIn('1 unread messages in Discussions', html)
         self.assertIn('href="/my/discussions"', html)

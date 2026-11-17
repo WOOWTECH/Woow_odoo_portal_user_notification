@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- /my: Odoo's alert card for unread conversations, next to the unread
-         notifications card; counted through /my/counters -->
-    <template id="portal_my_home" inherit_id="portal.portal_my_home" name="Portal notifications: unread conversations card">
-        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
-            <t t-set="portal_alert_category_enable" t-value="True"/>
-        </xpath>
-        <div id="portal_alert_category" position="inside">
+    <!-- /my: Odoo's alert card for unread conversations, in the notification
+         centre's own category (first on /my), next to the unread notifications
+         card; counted through /my/counters -->
+    <template id="portal_my_home" inherit_id="woow_portal_notification.portal_my_home" name="Portal notifications: unread conversations card">
+        <div id="portal_wpn_category" position="inside">
             <t t-call="portal.portal_docs_entry">
                 <t t-set="bg_color" t-value="'alert alert-primary align-items-center'"/>
                 <t t-set="placeholder_count" t-value="'wpn_unread_conversation_count'"/>

@@ -30,7 +30,7 @@ of the portal and follows the website theme.
 
 **`/my`**
 - A greeting in Odoo's header row, for example "Good afternoon, Daming Wang". The browser's clock picks the part of the day, so it is right even when the user has no time zone set.
-- Odoo's alert card "N Unread notifications", next to "Quotations to review", and a "Notifications" card among Odoo's cards. Both are counted through `/my/counters` like every other card, and stay hidden when there is nothing to count.
+- The notification centre's cards come first on the page, ahead of every other card or alert: Odoo's alert card "N Unread notifications" (and "N Unread conversations" with the discussion bridge), then a "Notifications" card. They are counted through `/my/counters` like every other card, and stay hidden when there is nothing to count.
 
 **`/my/notifications`**
 - Odoo's portal search bar (filter All / Unread, search) and portal table, like the orders or invoices list: newest message first, 20 per page, Odoo's pager. Unread notifications are bold with an "Unread" badge.
