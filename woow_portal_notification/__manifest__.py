@@ -1,6 +1,6 @@
 {
     "name": "Portal Notification Centre",
-    "version": "18.0.1.2.1",
+    "version": "18.0.1.2.2",
     "category": "Website",
     "summary": "An inbox for portal customers: unread notifications, "
                "Odoo's own cards on /my, and a notification list page",
@@ -15,9 +15,9 @@ so it looks like the rest of the portal and follows the website theme:
 
 * portal users' e-mail notifications are kept unread (Odoo creates them read);
   opening the document, the notification or "Mark all as read" reads them;
-* /my greets the customer in Odoo's header row and shows Odoo's alert card
-  "N Unread notifications" and a "Notifications" card, counted like the
-  other cards;
+* /my greets the customer in Odoo's header row and shows, first on the page,
+  Odoo's alert card "N Unread notifications" and a "Notifications" card,
+  counted like the other cards;
 * /my/notifications lists the notifications like the orders list (filter
   all / unread, search, pages); a notification opens its document, or shows
   the message when the document has no page of its own;
