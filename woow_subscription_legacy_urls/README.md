@@ -1,16 +1,16 @@
 # woow_subscription_legacy_urls
 
-舊訂閱入口頁的網址，轉址到 /woow 的訂閱列表。授權 LGPL-3。
+舊訂閱入口頁的網址，轉址到「我的帳戶」的訂閱頁（`/my/subscriptions`，由 woow_paas_platform 提供）。授權 LGPL-3。
 
 | 舊網址 | 回應 |
 |---|---|
-| `/my/sh_subscription` | 301，`Location: /woow#/billing/subscriptions` |
+| `/my/sh_subscription` | 301，`Location: /my/subscriptions` |
 | `/my/sh_subscription/page/<n>` | 同上 |
-| `/my/sh_subscription/<id>`（舊信與書籤裡的深連結） | 同上 |
+| `/my/sh_subscription/<id>`（舊信與書籤裡的深連結） | 301，`Location: /my/subscriptions/<id>`（切換時保留了 id，所以是同一筆訂閱） |
 | `/cancel-subscription`、`/renew-subscription` | 不轉址，404 |
 
-- 只接 GET 與 HEAD，任何人都轉址：/woow 自己會要求登入。不查資料，也不儲存 session。
-- 查詢字串一律丟掉。舊頁面的分頁、排序、`access_token` 等參數，/woow 都不讀；轉址也不把 token 往外帶。
+- 只接 GET 與 HEAD，任何人都轉址：「我的帳戶」的頁面自己會要求登入，也只讓訂閱的客戶本人看到。這裡不查資料，也不儲存 session。
+- 查詢字串一律丟掉。舊頁面的分頁、排序、`access_token` 等參數，新頁面都不讀；轉址也不把 token 往外帶。
 
 ## 安裝時機與保留期限
 

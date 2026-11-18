@@ -2,9 +2,8 @@
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 """Opening a subscription notification from the portal notification centre.
 
-The customer of the subscription lands on the subscription list of the /woow
-app, ``/woow#/billing/subscriptions``
-(the app has no page per subscription). Anyone else gets what the centre does
+The customer of the subscription lands on the page of that subscription in
+"My account", ``/my/subscriptions/<id>``. Anyone else gets what the centre does
 for a document without a page of its own: the message, in a dialog. Portal
 customers have no access rights on subscriptions; opening the notification
 must not end in a 403 for them.
@@ -17,7 +16,7 @@ from markupsafe import Markup
 from odoo import Command
 from odoo.tests import HttpCase, tagged
 
-SUBSCRIPTION_LIST = '/woow#/billing/subscriptions'
+SUBSCRIPTION_PAGE = '/my/subscriptions/%d'
 
 
 @tagged('post_install', '-at_install', 'woow_portal_notification_subscription')
@@ -79,11 +78,11 @@ class TestSubscriptionNotificationLink(HttpCase):
             for row in rows
         }
 
-    def test_customer_opens_the_subscription_list(self):
+    def test_customer_opens_the_subscription_page(self):
         mine = self._notification(self._post(self.subscription, '<p>wpns-your-plan</p>'), self.customer)
         self.assertFalse(mine.is_read, "the centre keeps it unread")
         self._login(self.customer)
-        self.assertEqual(self._open(mine), (303, SUBSCRIPTION_LIST))
+        self.assertEqual(self._open(mine), (303, SUBSCRIPTION_PAGE % self.subscription.id))
         self.env.invalidate_all()
         self.assertTrue(mine.is_read, "opening it reads it")
 
@@ -121,7 +120,7 @@ class TestSubscriptionNotificationLink(HttpCase):
         links = self._title_links(response.text)
         self.assertEqual(links.get(on_own.id), '/my/notifications/%d/open' % on_own.id)
         self.assertNotIn(on_other.id, links, "another customer's subscription is not part of their portal")
-        self.assertEqual(self._open(on_own), (303, SUBSCRIPTION_LIST))
+        self.assertEqual(self._open(on_own), (303, SUBSCRIPTION_PAGE % own.id))
 
     def test_internal_user_without_subscription_rights(self):
         """The centre leaves out what the user may not read; their list still opens."""

@@ -15,7 +15,7 @@ from odoo.tests import TransactionCase, tagged
 from odoo.tools import SQL
 
 MODULE = 'woow_portal_notification_subscription'
-SUBSCRIPTION_LIST = '/woow#/billing/subscriptions'
+SUBSCRIPTION_PAGE = '/my/subscriptions/%d'
 DORMANT_PARAM = 'woow_subscription.dormant'
 #: Statements that change the database.
 WRITES = ('INSERT', 'UPDATE', 'DELETE', 'MERGE', 'CREATE', 'ALTER', 'DROP', 'TRUNCATE', 'COPY')
@@ -90,7 +90,7 @@ class TestBridgeIsInert(TransactionCase):
             Reader = Subscription.with_user(self.accountant)
             own = Reader.search(Reader._wpn_portal_record_domain())
             self.env.flush_all()
-        self.assertEqual(customer_url, SUBSCRIPTION_LIST)
+        self.assertEqual(customer_url, SUBSCRIPTION_PAGE % self.subscription.id)
         self.assertFalse(stranger_url, "not their subscription: no page, the centre shows the message")
         self.assertEqual(own, self.accountant_subscription)
         self.assertTrue(statements, "the recorder saw the reads")
